@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .product-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; padding: 3rem 0; }
+  .img-gallery { position: sticky; top: 90px; }
+  .img-main { aspect-ratio: 3/4; overflow: hidden; border-radius: 16px; margin-bottom: 1rem; background: #F5F0EB; }
+  .img-main img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .img-main:hover img { transform: scale(1.04); }
+  .img-thumbs { display: flex; gap: 0.75rem; }
+  .img-thumb { width: 80px; height: 100px; overflow: hidden; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
+  .img-thumb.active { border-color: var(--saffron); }
+  .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .product-info { padding-top: 1rem; }
+  .product-title { font-family: var(--font-display); font-size: 2.2rem; font-weight: 400; margin: 0.5rem 0 1rem; line-height: 1.2; }
+  .product-price { font-size: 2rem; font-weight: 600; color: var(--charcoal); }
+  .product-mrp { font-size: 1.1rem; color: var(--warm-grey); text-decoration: line-through; margin-left: 0.75rem; }
+  .product-discount { background: var(--saffron); color: white; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; }
+  .size-grid { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0; }
+  .size-btn { padding: 0.5rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.875rem; transition: var(--transition); background: white; }
+  .size-btn:hover, .size-btn.active { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-pale); }
+  .color-grid { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.75rem 0; }
+  .color-btn { padding: 0.4rem 0.9rem; border: 1.5px solid var(--border); border-radius: 50px; cursor: pointer; font-size: 0.8rem; transition: var(--transition); background: white; }
+  .color-btn:hover, .color-btn.active { border-color: var(--charcoal); background: var(--charcoal); color: white; }
+  .product-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; margin: 1.5rem 0; }
+  .meta-item { font-size: 0.875rem; }
+  .meta-label { color: var(--warm-grey); }
+  .meta-value { font-weight: 500; }
+  .quantity-selector { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .qty-btn { width: 40px; height: 40px; border: none; background: var(--ivory); cursor: pointer; font-size: 1rem; transition: var(--transition); }
+  .qty-btn:hover { background: var(--saffron); color: white; }
+  .qty-input { width: 50px; height: 40px; border: none; text-align: center; font-size: 0.95rem; outline: none; }
+  .reviews-section { margin-top: 4rem; }
+  .review-card { background: var(--surface); border-radius: var(--radius); padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 1rem; }
+  .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+  .tab-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 2rem; }
+  .tab-btn { padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; font-family: var(--font-body); font-size: 0.9rem; color: var(--warm-grey); position: relative; transition: var(--transition); }
+  .tab-btn.active { color: var(--saffron); font-weight: 600; }
+  .tab-btn.active::after { content:''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--saffron); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  @media(max-width:768px) { .product-detail { grid-template-columns: 1fr; gap: 2rem; } .img-gallery { position: relative; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="breadcrumb mt-2">
+    <a href="/">Home</a>
+    <i class="fas fa-chevron-right" style="font-size:0.65rem"></i>
+    <a href="/products?category={{ product.category.slug }}">{{ product.category.name }}</a>
+    <i class="fas fa-chevron-right" style="font-size:0.65rem"></i>
+    <span>{{ product.name }}</span>
+  </div>
+
+  <div class="product-detail">
+    <!-- GALLERY -->
+    <div class="img-gallery">
+      <div class="img-main">
+        <img id="mainImg" src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/600/800' }}" alt="{{ product.name }}"/>
+      </div>
+      <div class="img-thumbs">
+        {% for img in product.get_images() %}
+        <div class="img-thumb {% if loop.first %}active{% endif %}" onclick="changeImg('{{ img }}', this)">
+          <img src="{{ img }}" alt="{{ product.name }} view {{ loop.index }}"/>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="product-info">
+      <span class="tag tag-saffron">{{ product.category.name }}</span>
+      {% if product.occasion %}<span class="tag tag-gold" style="margin-left:0.5rem">{{ product.occasion }}</span>{% endif %}
+      <h1 class="product-title">{{ product.name }}</h1>
+
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+        <div class="stars">
+          {% for i in range(5) %}<i class="fas fa-star" {% if i >= product.avg_rating()|int %}style="color:#E5E7EB"{% endif %}></i>{% endfor %}
+          <span style="color:var(--warm-grey);font-size:0.85rem"> {{ product.avg_rating() }} ({{ product.reviews|length }} reviews)</span>
+        </div>
+        <span class="tag {% if product.total_stock() > 10 %}tag-green{% elif product.total_stock() > 0 %}tag-gold{% else %}tag-red{% endif %}">
+          {% if product.total_stock() > 10 %}In Stock{% elif product.total_stock() > 0 %}Only {{ product.total_stock() }} left!{% else %}Out of Stock{% endif %}
+        </span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+        <span class="product-price">₹{{ product.price|int }}</span>
+        {% if product.mrp %}<span class="product-mrp">₹{{ product.mrp|int }}</span>{% endif %}
+        {% if product.discount_percent() > 0 %}<span class="product-discount">{{ product.discount_percent() }}% OFF</span>{% endif %}
+      </div>
+      <p style="font-size:0.8rem;color:var(--warm-grey);margin-top:-1rem;margin-bottom:1.5rem">Inclusive of all taxes. Free shipping above ₹999.</p>
+
+      <form action="/cart/add" method="POST" id="addToCartForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="product_id" value="{{ product.id }}"/>
+        <input type="hidden" name="size" id="selectedSize"/>
+        <input type="hidden" name="color" id="selectedColor"/>
+        <input type="hidden" name="quantity" id="selectedQty" value="1"/>
+
+        <!-- SIZES -->
+        {% if product.get_sizes() %}
+        <div style="margin-bottom:1rem">
+          <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem">Size <a href="#" style="color:var(--saffron);font-size:0.8rem;margin-left:0.5rem">Size Guide</a></div>
+          <div class="size-grid">
+            {% for size in product.get_sizes() %}
+            <button type="button" class="size-btn" onclick="selectSize('{{ size }}', this)">{{ size }}</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- COLORS -->
+        {% if product.get_colors() %}
+        <div style="margin-bottom:1rem">
+          <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem">Color: <span id="colorLabel" style="color:var(--saffron)"></span></div>
+          <div class="color-grid">
+            {% for color in product.get_colors() %}
+            <button type="button" class="color-btn" onclick="selectColor('{{ color }}', this)">{{ color }}</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- QUANTITY -->
+        <div style="margin-bottom:1.5rem">
+          <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem">Quantity</div>
+          <div class="quantity-selector">
+            <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input type="text" class="qty-input" id="qtyDisplay" value="1" readonly/>
+            <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <button type="submit" class="btn btn-primary btn-lg" style="flex:1">
+            <i class="fas fa-shopping-bag"></i> Add to Cart
+          </button>
+          <form action="/wishlist/toggle/{{ product.id }}" method="POST" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="btn btn-outline btn-lg {% if in_wishlist %}active{% endif %}" style="{% if in_wishlist %}background:var(--saffron);color:white;border-color:var(--saffron){% endif %}">
+              <i class="fas fa-heart"></i>
+            </button>
+          </form>
+        </div>
+      </form>
+
+      <!-- META -->
+      <div class="divider"></div>
+      <div class="product-meta">
+        {% if product.fabric %}<div class="meta-item"><span class="meta-label">Fabric: </span><span class="meta-value">{{ product.fabric }}</span></div>{% endif %}
+        {% if product.occasion %}<div class="meta-item"><span class="meta-label">Occasion: </span><span class="meta-value">{{ product.occasion }}</span></div>{% endif %}
+        <div class="meta-item"><span class="meta-label">SKU: </span><span class="meta-value">RNG-{{ "%04d" | format(product.id) }}</span></div>
+        <div class="meta-item"><span class="meta-label">Category: </span><span class="meta-value">{{ product.category.name }}</span></div>
+      </div>
+
+      <!-- GUARANTEES -->
+      <div style="background:var(--saffron-pale);border-radius:var(--radius);padding:1rem;display:flex;gap:2rem;flex-wrap:wrap;font-size:0.8rem">
+        <span><i class="fas fa-truck" style="color:var(--saffron)"></i> Free shipping ₹999+</span>
+        <span><i class="fas fa-undo" style="color:var(--saffron)"></i> 7-day returns</span>
+        <span><i class="fas fa-shield-alt" style="color:var(--saffron)"></i> 100% authentic</span>
+        <span><i class="fas fa-credit-card" style="color:var(--saffron)"></i> COD available</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS: Description, Care, Reviews -->
+  <div style="margin-top: 4rem;">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="showTab('desc', this)">Description</button>
+      <button class="tab-btn" onclick="showTab('care', this)">Care Instructions</button>
+      <button class="tab-btn" onclick="showTab('reviews', this)">Reviews ({{ product.reviews|length }})</button>
+    </div>
+
+    <div id="desc" class="tab-panel active">
+      <p style="line-height:1.9;max-width:700px">{{ product.description }}</p>
+    </div>
+
+    <div id="care" class="tab-panel">
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.75rem;font-size:0.9rem">
+        <li><i class="fas fa-tint" style="color:var(--saffron);width:20px"></i> Gentle hand wash or dry clean recommended</li>
+        <li><i class="fas fa-thermometer-half" style="color:var(--saffron);width:20px"></i> Wash in cold water (30°C max)</li>
+        <li><i class="fas fa-ban" style="color:var(--saffron);width:20px"></i> Do not bleach or tumble dry</li>
+        <li><i class="fas fa-sun" style="color:var(--saffron);width:20px"></i> Dry in shade to preserve colour</li>
+        <li><i class="fas fa-iron" style="color:var(--saffron);width:20px"></i> Iron on reverse side at medium heat</li>
+      </ul>
+    </div>
+
+    <div id="reviews" class="tab-panel">
+      {% if product.reviews %}
+        {% for review in product.reviews if review.is_approved %}
+        <div class="review-card">
+          <div class="review-header">
+            <div>
+              <strong>{{ review.reviewer.name }}</strong>
+              <div class="stars" style="font-size:0.85rem">
+                {% for i in range(5) %}<i class="fas fa-star" {% if i >= review.rating %}style="color:#E5E7EB"{% endif %}></i>{% endfor %}
+              </div>
+            </div>
+            <span style="font-size:0.8rem;color:var(--warm-grey)">{{ review.created_at.strftime('%d %b %Y') }}</span>
+          </div>
+          <p style="font-size:0.9rem;color:var(--charcoal)">{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--warm-grey)">No reviews yet. Be the first to review!</p>
+      {% endif %}
+
+      {% if current_user.is_authenticated %}
+      <div style="background:var(--saffron-pale);border-radius:var(--radius);padding:1.5rem;margin-top:2rem">
+        <h4 style="font-family:var(--font-display);font-size:1.2rem;margin-bottom:1rem">Write a Review</h4>
+        <form action="/product/{{ product.id }}/review" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-group">
+            <label class="form-label">Your Rating</label>
+            <div style="display:flex;gap:0.5rem">
+              {% for i in [1,2,3,4,5] %}
+              <label style="cursor:pointer;font-size:1.4rem;color:#E5E7EB" class="star-label">
+                <input type="radio" name="rating" value="{{ i }}" style="display:none" required/>
+                <i class="fas fa-star"></i>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Review</label>
+            <textarea class="form-control" name="comment" rows="3" placeholder="Share your experience..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+      </div>
+      {% else %}
+      <p style="margin-top:1rem"><a href="/auth/login" style="color:var(--saffron)">Login</a> to write a review.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RELATED -->
+  {% if related %}
+  <div class="section">
+    <div class="section-header">
+      <p class="section-label">You May Also Like</p>
+      <h2 class="section-title">Related <strong>Products</strong></h2>
+    </div>
+    <div class="grid-4">
+      {% for p in related %}
+      <div class="card product-card">
+        <div class="img-wrapper">
+          <img src="{{ p.get_images()[0] if p.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ p.name }}" loading="lazy"/>
+          <a href="/product/{{ p.slug }}" class="quick-add">Quick View</a>
+        </div>
+        <div class="card-body">
+          <h3 style="font-size:1rem"><a href="/product/{{ p.slug }}" style="text-decoration:none;color:inherit">{{ p.name }}</a></h3>
+          <div class="price"><span class="price-current">₹{{ p.price|int }}</span></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  let qty = 1;
+  function changeQty(d) {
+    qty = Math.max(1, qty + d);
+    document.getElementById('qtyDisplay').value = qty;
+    document.getElementById('selectedQty').value = qty;
+  }
+  function selectSize(s, el) {
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('selectedSize').value = s;
+  }
+  function selectColor(c, el) {
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('selectedColor').value = c;
+    document.getElementById('colorLabel').textContent = c;
+  }
+  function changeImg(src, el) {
+    document.getElementById('mainImg').src = src;
+    document.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+  // Star rating hover
+  const stars = document.querySelectorAll('.star-label');
+  stars.forEach((s, i) => {
+    s.addEventListener('mouseover', () => stars.forEach((st, j) => st.style.color = j <= i ? '#F59E0B' : '#E5E7EB'));
+    s.addEventListener('click', () => s.querySelector('input').checked = true);
+  });
+</script>
+{% endblock %}

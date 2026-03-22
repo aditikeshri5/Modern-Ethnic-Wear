@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}My Orders — Rangmanch{% endblock %}
+{% block content %}
+<div class="container" style="padding: 2rem 0 4rem;">
+  <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:2rem">My Orders</h1>
+  {% if orders %}
+  <div style="display:flex;flex-direction:column;gap:1.25rem">
+    {% for order in orders %}
+    <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden">
+      <div style="padding:1rem 1.25rem;background:var(--saffron-pale);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
+        <div style="display:flex;gap:2rem;flex-wrap:wrap">
+          <div><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--warm-grey)">Order</div><div style="font-weight:700;color:var(--saffron)">#{{ order.order_number }}</div></div>
+          <div><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--warm-grey)">Date</div><div style="font-size:0.875rem">{{ order.created_at.strftime('%d %b %Y') }}</div></div>
+          <div><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--warm-grey)">Total</div><div style="font-weight:700">₹{{ order.total|int }}</div></div>
+          <div><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--warm-grey)">Payment</div><span class="tag {% if order.payment_status == 'paid' %}tag-green{% else %}tag-grey{% endif %}">{{ order.payment_method|upper if order.payment_method else 'COD' }}</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <span class="tag {% if order.status == 'delivered' %}tag-green{% elif order.status == 'cancelled' %}tag-red{% elif order.status == 'shipped' %}tag-blue{% else %}tag-saffron{% endif %}">{{ order.status|title }}</span>
+          <a href="/cart/order/{{ order.id }}" class="btn btn-sm btn-outline">Details</a>
+        </div>
+      </div>
+      <div style="padding:1rem 1.25rem;display:flex;gap:1rem;flex-wrap:wrap">
+        {% for item in order.items %}
+        <div style="display:flex;gap:0.75rem;align-items:center;min-width:200px">
+          <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/60/75' }}" style="width:55px;height:68px;object-fit:cover;border-radius:6px"/>
+          <div>
+            <div style="font-size:0.8rem;font-weight:600;line-height:1.3">{{ item.product.name }}</div>
+            <div style="font-size:0.75rem;color:var(--warm-grey)">Qty: {{ item.quantity }}{% if item.size %} · {{ item.size }}{% endif %}</div>
+            <div style="font-size:0.8rem;font-weight:600">₹{{ item.total_price|int }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:5rem 2rem">
+    <i class="fas fa-box-open" style="font-size:3.5rem;color:var(--border);margin-bottom:1rem"></i>
+    <h2 style="font-family:var(--font-display);font-size:2rem;margin-bottom:0.5rem">No orders yet</h2>
+    <p style="color:var(--warm-grey);margin-bottom:1.5rem">Start shopping to see your orders here.</p>
+    <a href="/products" class="btn btn-primary">Shop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

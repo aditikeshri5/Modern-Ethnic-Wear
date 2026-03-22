@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}All Products — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .products-layout { display: grid; grid-template-columns: 260px 1fr; gap: 2rem; align-items: start; }
+  .sidebar { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); position: sticky; top: 90px; }
+  .sidebar h4 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .filter-group { margin-bottom: 1.5rem; }
+  .filter-group label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--warm-grey); margin-bottom: 0.75rem; }
+  .filter-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; cursor: pointer; font-size: 0.875rem; }
+  .filter-option input { accent-color: var(--saffron); }
+  .price-range { display: flex; gap: 0.5rem; align-items: center; }
+  .price-input { width: 80px; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.825rem; }
+  .sort-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .sort-bar select { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-body); font-size: 0.875rem; }
+  .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 3rem; }
+  .page-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--charcoal); font-size: 0.875rem; transition: var(--transition); }
+  .page-btn.active, .page-btn:hover { background: var(--saffron); color: white; border-color: var(--saffron); }
+  @media(max-width: 768px) { .products-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <i class="fas fa-chevron-right" style="font-size:0.65rem"></i> <span>Products</span>
+    {% if search %}<i class="fas fa-chevron-right" style="font-size:0.65rem"></i><span>Search: "{{ search }}"</span>{% endif %}
+  </div>
+  <div class="products-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h4>Refine</h4>
+      <form id="filterForm" method="GET" action="/products">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {% if search %}<input type="hidden" name="q" value="{{ search }}"/>{% endif %}
+        <div class="filter-group">
+          <label>Category</label>
+          {% for cat in categories %}
+          <div class="filter-option">
+            <input type="radio" name="category" value="{{ cat.slug }}" id="cat_{{ cat.slug }}" {% if current_category == cat.slug %}checked{% endif %} onchange="this.form.submit()"/>
+            <label for="cat_{{ cat.slug }}" style="cursor:pointer">{{ cat.name }}</label>
+          </div>
+          {% endfor %}
+          <div class="filter-option">
+            <input type="radio" name="category" value="" {% if not current_category %}checked{% endif %} onchange="this.form.submit()"/>
+            <label style="cursor:pointer">All Categories</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Occasion</label>
+          {% for occ in ['Casual', 'Festive', 'Bridal', 'Party', 'Wedding'] %}
+          <div class="filter-option">
+            <input type="radio" name="occasion" value="{{ occ }}" {% if occasion == occ %}checked{% endif %} onchange="this.form.submit()"/>
+            <label style="cursor:pointer">{{ occ }}</label>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="filter-group">
+          <label>Price Range</label>
+          <div class="price-range">
+            <input type="number" class="price-input" name="min_price" placeholder="₹ Min" value="{{ request.args.get('min_price', '') }}"/>
+            <span>—</span>
+            <input type="number" class="price-input" name="max_price" placeholder="₹ Max" value="{{ request.args.get('max_price', '') }}"/>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm btn-full mt-1">Apply</button>
+        </div>
+        <div class="divider"></div>
+        <a href="/products" class="btn btn-outline btn-sm btn-full">Clear Filters</a>
+      </form>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div>
+      <div class="sort-bar">
+        <p style="font-size:0.875rem;color:var(--warm-grey)">
+          Showing <strong>{{ pagination.total }}</strong> products
+        </p>
+        <form method="GET" action="/products">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {% if search %}<input type="hidden" name="q" value="{{ search }}"/>{% endif %}
+          {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}"/>{% endif %}
+          <select name="sort" onchange="this.form.submit()" style="padding:0.5rem 1rem;border:1px solid var(--border);border-radius:8px;font-family:var(--font-body)">
+            <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest First</option>
+            <option value="price_asc" {% if sort=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="popular" {% if sort=='popular' %}selected{% endif %}>Most Popular</option>
+          </select>
+        </form>
+      </div>
+      {% if products %}
+      <div class="grid-4">
+        {% for product in products %}
+        <div class="card product-card">
+          <div class="img-wrapper">
+            <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ product.name }}" loading="lazy"/>
+            {% if product.discount_percent() > 0 %}<div class="badge-discount">-{{ product.discount_percent() }}%</div>{% endif %}
+            <form action="/wishlist/toggle/{{ product.id }}" method="POST" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="wishlist-btn"><i class="fas fa-heart"></i></button>
+            </form>
+            <a href="/product/{{ product.slug }}" class="quick-add">Quick View</a>
+          </div>
+          <div class="card-body">
+            <div class="category-tag">{{ product.category.name }}</div>
+            <h3 style="font-size:1rem"><a href="/product/{{ product.slug }}" style="text-decoration:none;color:inherit">{{ product.name }}</a></h3>
+            <div class="stars" style="font-size:0.75rem;margin-bottom:0.4rem">
+              {% for i in range(5) %}<i class="fas fa-star" {% if i >= (product.avg_rating()|int) %}style="color:#E5E7EB"{% endif %}></i>{% endfor %}
+              <span style="color:var(--warm-grey);font-size:0.75rem"> ({{ product.reviews|length }})</span>
+            </div>
+            <div class="price">
+              <span class="price-current">₹{{ product.price|int }}</span>
+              {% if product.mrp %}<span class="price-mrp">₹{{ product.mrp|int }}</span>{% endif %}
+            </div>
+            <div style="margin-top: 0.75rem; display:flex; gap:0.4rem; flex-wrap:wrap">
+              {% for size in product.get_sizes()[:4] %}
+              <span style="font-size:0.7rem;border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--warm-grey)">{{ size }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('shop.products', page=pagination.prev_num, category=current_category, sort=sort, q=search) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page_num in pagination.iter_pages() %}
+          {% if page_num %}
+            <a href="{{ url_for('shop.products', page=page_num, category=current_category, sort=sort, q=search) }}" class="page-btn {% if page_num == pagination.page %}active{% endif %}">{{ page_num }}</a>
+          {% else %}
+            <span class="page-btn" style="color:var(--warm-grey)">...</span>
+          {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <a href="{{ url_for('shop.products', page=pagination.next_num, category=current_category, sort=sort, q=search) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:5rem 2rem">
+        <i class="fas fa-search" style="font-size:3rem;color:var(--border);margin-bottom:1rem"></i>
+        <h3 style="font-family:var(--font-display);font-size:1.8rem;margin-bottom:0.5rem">No products found</h3>
+        <p style="color:var(--warm-grey);margin-bottom:1.5rem">Try adjusting your filters or search term.</p>
+        <a href="/products" class="btn btn-primary">Browse All Products</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Pay for Order #{{ order.order_number }} — Rangmanch{% endblock %}
+{% block content %}
+<div class="container" style="padding: 3rem 0; max-width: 500px;">
+  <div class="card" style="padding: 2rem; text-align: center;">
+    <div style="margin-bottom: 1.5rem;">
+      <i class="fas fa-lock" style="font-size: 2.5rem; color: var(--saffron);"></i>
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; margin-top: 0.75rem;">Secure Payment</h2>
+      <p style="color: var(--warm-grey);">Order #{{ order.order_number }}</p>
+    </div>
+    <div style="background: var(--saffron-pale); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.5rem; text-align: left;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.875rem; color: var(--warm-grey);">Subtotal</span>
+        <span>₹{{ order.subtotal|int }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+        <span>Total to Pay</span>
+        <span style="color: var(--saffron);">₹{{ order.total|int }}</span>
+      </div>
+    </div>
+    <form action="/payment/verify" method="POST" style="margin-bottom: 1rem;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <input type="hidden" name="order_id" value="{{ order.id }}">
+      <button type="submit" class="btn btn-primary btn-full btn-lg">
+        <i class="fas fa-credit-card"></i> Pay ₹{{ order.total|int }} Now (Demo)
+      </button>
+    </form>
+
+    <form action="/payment/failed" method="POST" style="margin-bottom: 1rem;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <input type="hidden" name="order_id" value="{{ order.id }}">
+      <button type="submit" class="btn btn-outline btn-full btn-lg" style="color: red; border-color: red;">
+        <i class="fas fa-times-circle"></i> Simulate Payment Failure
+      </button>
+    </form>
+
+    <a href="/cart/checkout" class="btn btn-outline btn-full">← Back to Checkout</a>
+    <p style="font-size: 0.75rem; color: var(--warm-grey); margin-top: 1rem;">
+      <i class="fas fa-shield-alt"></i> Simulated Checkout Experience
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}

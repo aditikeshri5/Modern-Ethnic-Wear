@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Admin — Rangmanch{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --saffron: #E8621A; --saffron-pale: #FDF0E8; --burgundy: #6B1E2E;
+      --gold: #C8993A; --ivory: #FAF6F0; --charcoal: #1C1410;
+      --warm-grey: #8A7A72; --border: #E8DDD4; --surface: #FFFFFF;
+      --sidebar-bg: #1A1208; --sidebar-w: 240px;
+      --shadow: 0 4px 24px rgba(28,20,16,0.08);
+      --radius: 12px; --font-body: 'DM Sans', sans-serif;
+      --font-display: 'Cormorant Garamond', serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-body); background: #F5F0EB; color: var(--charcoal); display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--sidebar-bg); position: fixed;
+      top: 0; left: 0; height: 100vh; display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 1.5rem; font-family: var(--font-display); font-size: 1.6rem;
+      color: white; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-logo span { color: #C8993A; }
+    .sidebar-logo small { display: block; font-size: 0.7rem; font-family: var(--font-body); color: rgba(255,255,255,0.4); letter-spacing: 0.15em; text-transform: uppercase; }
+    .sidebar-section { padding: 1rem 0; }
+    .sidebar-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); padding: 0 1.25rem; margin-bottom: 0.25rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 1.25rem; text-decoration: none;
+      color: rgba(255,255,255,0.65); font-size: 0.875rem;
+      transition: all 0.2s; border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .nav-item.active { background: rgba(232,98,26,0.15); color: var(--saffron); border-left-color: var(--saffron); }
+    .nav-item i { width: 18px; text-align: center; font-size: 0.9rem; }
+    .sidebar-footer { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-footer a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+    .sidebar-footer a:hover { color: white; }
+
+    /* MAIN */
+    .admin-main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar {
+      background: white; padding: 0 2rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 1.25rem; }
+    .topbar-badge { background: var(--saffron); color: white; border-radius: 50px; padding: 0.2rem 0.7rem; font-size: 0.75rem; }
+    .admin-content { padding: 2rem; flex: 1; }
+
+    /* CARDS */
+    .stat-card {
+      background: white; border-radius: var(--radius); padding: 1.5rem;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--saffron); }
+    .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.8rem; color: var(--warm-grey); text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat-change { font-size: 0.8rem; margin-top: 0.5rem; }
+    .stat-change.up { color: #16A34A; }
+    .stat-change.down { color: #DC2626; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+
+    /* PANEL */
+    .panel { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 1.5rem; }
+    .panel-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .panel-header h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; }
+    .panel-body { padding: 1.5rem; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th { background: #F9F7F5; padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--warm-grey); border-bottom: 1px solid var(--border); }
+    tbody td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #FAFAFA; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; font-family: var(--font-body); font-size: 0.8rem; font-weight: 500; cursor: pointer; text-decoration: none; border: 1.5px solid transparent; transition: all 0.2s; }
+    .btn-primary { background: var(--saffron); color: white; border-color: var(--saffron); }
+    .btn-primary:hover { background: var(--burgundy); border-color: var(--burgundy); }
+    .btn-outline { background: transparent; color: var(--saffron); border-color: var(--saffron); }
+    .btn-outline:hover { background: var(--saffron); color: white; }
+    .btn-danger { background: #FEE2E2; color: #DC2626; border-color: #FCA5A5; }
+    .btn-danger:hover { background: #DC2626; color: white; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+    .btn-green { background: #DCFCE7; color: #16A34A; border-color: #86EFAC; }
+    .btn-green:hover { background: #16A34A; color: white; }
+
+    /* TAGS */
+    .tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.72rem; font-weight: 500; }
+    .tag-saffron { background: #FDF0E8; color: var(--saffron); }
+    .tag-green { background: #DCFCE7; color: #16A34A; }
+    .tag-red { background: #FEE2E2; color: #DC2626; }
+    .tag-blue { background: #DBEAFE; color: #1D4ED8; }
+    .tag-grey { background: #F3F4F6; color: #6B7280; }
+    .tag-gold { background: #FEF9C3; color: #92400E; }
+    .tag-purple { background: #F3E8FF; color: #7C3AED; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--charcoal); }
+    .form-control { width: 100%; padding: 0.6rem 0.875rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--font-body); font-size: 0.875rem; outline: none; transition: all 0.2s; background: white; }
+    .form-control:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,98,26,0.1); }
+
+    /* ALERTS */
+    .flash-messages { position: fixed; top: 80px; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .alert { padding: 0.75rem 1rem; border-radius: var(--radius); font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem; box-shadow: var(--shadow); max-width: 340px; }
+    .alert-success { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; }
+    .alert-danger  { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
+    .alert-info    { background: #EFF6FF; border: 1px solid #93C5FD; color: #1D4ED8; }
+    .alert-warning { background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; }
+
+    /* MISC */
+    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    @media(max-width: 1024px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width: 768px) { .sidebar { transform: translateX(-100%); } .admin-main { margin-left: 0; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Flash Messages -->
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">Rang<span>manch</span><small>Admin Panel</small></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a href="/admin/" class="nav-item {% if request.path == '/admin/' %}active{% endif %}"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="/analytics/" class="nav-item {% if '/analytics' in request.path %}active{% endif %}"><i class="fas fa-chart-line"></i> Analytics</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Catalogue</div>
+      <a href="/admin/products" class="nav-item {% if '/admin/products' in request.path %}active{% endif %}"><i class="fas fa-tshirt"></i> Products</a>
+      <a href="/admin/categories" class="nav-item {% if '/admin/categories' in request.path %}active{% endif %}"><i class="fas fa-tags"></i> Categories</a>
+      <a href="/admin/inventory" class="nav-item {% if '/admin/inventory' in request.path %}active{% endif %}"><i class="fas fa-boxes"></i> Inventory</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Sales</div>
+      <a href="/admin/orders" class="nav-item {% if '/admin/orders' in request.path %}active{% endif %}"><i class="fas fa-shopping-bag"></i> Orders</a>
+      <a href="/admin/customers" class="nav-item {% if '/admin/customers' in request.path %}active{% endif %}"><i class="fas fa-users"></i> Customers</a>
+      <a href="/admin/coupons" class="nav-item {% if '/admin/coupons' in request.path %}active{% endif %}"><i class="fas fa-ticket-alt"></i> Coupons</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Content</div>
+      <a href="/admin/reviews" class="nav-item {% if '/admin/reviews' in request.path %}active{% endif %}"><i class="fas fa-star"></i> Reviews</a>
+    </div>
+    <div class="sidebar-footer">
+      <a href="/"><i class="fas fa-store"></i> View Store</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+      <div class="topbar-right">
+        <span style="font-size:0.85rem;color:var(--warm-grey)">{{ current_user.name }}</span>
+        <a href="/auth/logout" class="btn btn-sm btn-outline">Logout</a>
+      </div>
+    </div>
+    <div class="admin-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() => { document.querySelectorAll('.alert').forEach(a => a.style.opacity = '0'); }, 4000);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

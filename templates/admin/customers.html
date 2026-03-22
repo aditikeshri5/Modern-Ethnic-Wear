@@ -1,0 +1,45 @@
+{% extends 'admin/base.html' %}
+{% block title %}Customers — Rangmanch Admin{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3>All Customers ({{ users|length }})</h3>
+    <input type="text" class="form-control" placeholder="Search…" style="width:200px;padding:0.4rem 0.75rem" oninput="filterCust(this.value)"/>
+  </div>
+  <table id="custTable">
+    <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Joined</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr class="cust-row">
+        <td>
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div style="width:36px;height:36px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;flex-shrink:0">{{ u.name[0].upper() }}</div>
+            <div>
+              <div style="font-weight:600;font-size:0.875rem">{{ u.name }}</div>
+              <div style="font-size:0.75rem;color:var(--warm-grey)">{{ u.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size:0.85rem;color:var(--warm-grey)">{{ u.phone or '—' }}</td>
+        <td>{{ u.orders|length }}</td>
+        <td style="font-weight:600">
+          ₹{{ u.orders | selectattr('payment_status', 'equalto', 'paid') | sum(attribute='total') | int }}
+        </td>
+        <td style="font-size:0.8rem;color:var(--warm-grey)">{{ u.created_at.strftime('%d %b %Y') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function filterCust(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.cust-row').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}

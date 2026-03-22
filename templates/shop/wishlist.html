@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist — Rangmanch{% endblock %}
+{% block content %}
+<div class="container" style="padding: 2rem 0 4rem;">
+  <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:0.5rem">My Wishlist</h1>
+  <p style="color:var(--warm-grey);margin-bottom:2rem">{{ items|length }} saved item(s)</p>
+  {% if items %}
+  <div class="grid-4">
+    {% for item in items %}
+    <div class="card product-card">
+      <div class="img-wrapper">
+        <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ item.product.name }}" loading="lazy"/>
+        <form action="/wishlist/toggle/{{ item.product.id }}" method="POST" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="wishlist-btn active" style="color:#E53E3E"><i class="fas fa-heart"></i></button>
+        </form>
+        <a href="/product/{{ item.product.slug }}" class="quick-add">View Product</a>
+      </div>
+      <div class="card-body">
+        <div class="category-tag">{{ item.product.category.name }}</div>
+        <h3 style="font-size:1rem"><a href="/product/{{ item.product.slug }}" style="text-decoration:none;color:inherit">{{ item.product.name }}</a></h3>
+        <div class="price">
+          <span class="price-current">₹{{ item.product.price|int }}</span>
+          {% if item.product.mrp %}<span class="price-mrp">₹{{ item.product.mrp|int }}</span>{% endif %}
+        </div>
+        <a href="/product/{{ item.product.slug }}" class="btn btn-primary btn-sm btn-full mt-1" style="display:flex;justify-content:center;margin-top:0.75rem">Add to Cart</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:5rem 2rem">
+    <i class="fas fa-heart" style="font-size:3.5rem;color:var(--border);margin-bottom:1rem"></i>
+    <h2 style="font-family:var(--font-display);font-size:2rem;margin-bottom:0.5rem">Your wishlist is empty</h2>
+    <p style="color:var(--warm-grey);margin-bottom:1.5rem">Save your favourite pieces here.</p>
+    <a href="/products" class="btn btn-primary">Explore Products</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

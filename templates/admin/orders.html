@@ -1,0 +1,49 @@
+{% extends 'admin/base.html' %}
+{% block title %}Orders — Rangmanch Admin{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block content %}
+<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+  {% for s in ['', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] %}
+  <a href="/admin/orders{% if s %}?status={{ s }}{% endif %}" class="btn btn-sm {% if status == s %}btn-primary{% else %}btn-outline{% endif %}">
+    {% if s %}{{ s|title }}{% else %}All{% endif %}
+  </a>
+  {% endfor %}
+</div>
+<div class="panel">
+  <table>
+    <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td><a href="/admin/orders/{{ order.id }}" style="color:var(--saffron);font-weight:600">#{{ order.order_number }}</a></td>
+        <td>
+          <div style="font-weight:500;font-size:0.85rem">{{ order.customer.name }}</div>
+          <div style="font-size:0.75rem;color:var(--warm-grey)">{{ order.customer.email }}</div>
+        </td>
+        <td style="font-size:0.85rem">{{ order.items|length }} item(s)</td>
+        <td style="font-weight:600">₹{{ order.total|int }}</td>
+        <td>
+          <span class="tag {% if order.payment_status == 'paid' %}tag-green{% elif order.payment_status == 'failed' %}tag-red{% else %}tag-grey{% endif %}">
+            {{ order.payment_status|title }}
+          </span>
+          <div style="font-size:0.75rem;color:var(--warm-grey)">{{ order.payment_method|upper if order.payment_method else '—' }}</div>
+        </td>
+        <td>
+          <form action="/admin/orders/update-status" method="POST" style="display:flex;gap:0.4rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="order_id" value="{{ order.id }}"/>
+            <select name="status" class="form-control" style="padding:0.3rem 0.5rem;font-size:0.8rem;width:120px" onchange="this.form.submit()">
+              {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled','refunded'] %}
+              <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|title }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </td>
+        <td style="font-size:0.8rem;color:var(--warm-grey)">{{ order.created_at.strftime('%d %b %Y') }}</td>
+        <td><a href="/admin/orders/{{ order.id }}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

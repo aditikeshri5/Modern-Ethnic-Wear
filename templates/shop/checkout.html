@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Checkout — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; align-items: start; padding: 2rem 0 4rem; }
+  .checkout-section { background: white; border-radius: var(--radius); padding: 1.75rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .checkout-section h3 { font-family: var(--font-display); font-size: 1.25rem; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); display:flex;align-items:center;gap:0.75rem; }
+  .checkout-section h3 .step-num { width:28px;height:28px;background:var(--saffron);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0; }
+  .addr-card { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1rem; cursor: pointer; transition: var(--transition); }
+  .addr-card.selected, .addr-card:hover { border-color: var(--saffron); background: var(--saffron-pale); }
+  .payment-option { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: var(--transition); margin-bottom: 0.75rem; }
+  .payment-option.selected { border-color: var(--saffron); background: var(--saffron-pale); }
+  .payment-option img { height: 24px; }
+  .order-sidebar { background: white; border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); position: sticky; top: 90px; }
+  .checkout-item { display:flex;gap:0.75rem;margin-bottom:1rem;align-items:center; }
+  .checkout-item img { width:60px;height:75px;object-fit:cover;border-radius:8px;flex-shrink:0; }
+  @media(max-width:768px) { .checkout-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 style="font-family:var(--font-display);font-size:2rem;padding:1.5rem 0 0.5rem">Checkout</h1>
+  <form action="/cart/place-order" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="checkout-grid">
+      <div>
+        <!-- ADDRESS -->
+        <div class="checkout-section">
+          <h3><span class="step-num">1</span> Delivery Address</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1rem">
+            {% for addr in addresses %}
+            <label class="addr-card {% if loop.first %}selected{% endif %}" for="addr_{{ addr.id }}" onclick="selectAddr(this)">
+              <input type="radio" name="address_id" id="addr_{{ addr.id }}" value="{{ addr.id }}" {% if loop.first %}checked{% endif %} style="display:none"/>
+              <div style="font-weight:600">{{ addr.name }}</div>
+              <div style="font-size:0.85rem;color:var(--warm-grey);margin-top:0.25rem">{{ addr.line1 }}{% if addr.line2 %}, {{ addr.line2 }}{% endif %}<br>{{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}<br>📱 {{ addr.phone }}</div>
+              {% if addr.is_default %}<span class="tag tag-saffron" style="margin-top:0.5rem;display:inline-block">Default</span>{% endif %}
+            </label>
+            {% endfor %}
+          </div>
+          <button type="button" onclick="toggleNewAddr()" class="btn btn-outline btn-sm"><i class="fas fa-plus"></i> Add New Address</button>
+          <div id="newAddrForm" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group"><label class="form-label">Full Name</label><input class="form-control" name="new_name" placeholder="Your name"/></div>
+              <div class="form-group"><label class="form-label">Phone</label><input class="form-control" name="new_phone" placeholder="10-digit number"/></div>
+            </div>
+            <div class="form-group"><label class="form-label">Address Line 1</label><input class="form-control" name="new_line1" placeholder="House/Flat no, Street"/></div>
+            <div class="form-group"><label class="form-label">Address Line 2 (Optional)</label><input class="form-control" name="new_line2" placeholder="Landmark, Area"/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+              <div class="form-group"><label class="form-label">City</label><input class="form-control" name="new_city"/></div>
+              <div class="form-group"><label class="form-label">State</label><input class="form-control" name="new_state"/></div>
+              <div class="form-group"><label class="form-label">Pincode</label><input class="form-control" name="new_pincode"/></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="checkout-section">
+          <h3><span class="step-num">2</span> Payment Method</h3>
+          <div class="payment-option selected" id="pay_cod" onclick="selectPayment('cod', this)">
+            <input type="radio" name="payment_method" value="cod" checked style="accent-color:var(--saffron)"/>
+            <div><div style="font-weight:600">Cash on Delivery</div><div style="font-size:0.8rem;color:var(--warm-grey)">Pay when you receive your order</div></div>
+          </div>
+          <div class="payment-option" id="pay_online" onclick="selectPayment('online', this)">
+            <input type="radio" name="payment_method" value="online" style="accent-color:var(--saffron)"/>
+            <div>
+              <div style="font-weight:600">Pay Online <span class="tag tag-green" style="font-size:0.7rem">5% off</span></div>
+              <div style="font-size:0.8rem;color:var(--warm-grey)">Cards, UPI, NetBanking, EMI via Razorpay</div>
+              <img src="https://cdn.razorpay.com/static/assets/logo/razorpay.svg" style="height:18px;margin-top:0.4rem;opacity:0.7"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="order-sidebar">
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;margin-bottom:1.25rem">Your Order</h3>
+        {% for item in items %}
+        <div class="checkout-item">
+          <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/200' }}" alt="{{ item.product.name }}"/>
+          <div style="flex:1">
+            <div style="font-size:0.875rem;font-weight:600">{{ item.product.name }}</div>
+            <div style="font-size:0.75rem;color:var(--warm-grey)">{% if item.size %}{{ item.size }}{% endif %}{% if item.color %} · {{ item.color }}{% endif %} × {{ item.quantity }}</div>
+          </div>
+          <div style="font-weight:600;font-size:0.875rem">₹{{ (item.product.price * item.quantity)|int }}</div>
+        </div>
+        {% endfor %}
+        <div class="divider"></div>
+        <div class="summary-row" style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:0.5rem"><span>Subtotal</span><span>₹{{ subtotal|int }}</span></div>
+        {% if discount > 0 %}<div class="summary-row" style="display:flex;justify-content:space-between;font-size:0.875rem;color:green;margin-bottom:0.5rem"><span>Discount ({{ coupon_code }})</span><span>−₹{{ discount|int }}</span></div>{% endif %}
+        <div class="summary-row" style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:0.5rem"><span>Shipping</span><span>{% if shipping == 0 %}<span style="color:green">FREE</span>{% else %}₹{{ shipping }}{% endif %}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:700;padding-top:0.75rem;border-top:2px solid var(--border);margin-top:0.25rem"><span>Total</span><span style="color:var(--saffron)">₹{{ total|int }}</span></div>
+        <button type="submit" class="btn btn-primary btn-full mt-2" style="justify-content:center;margin-top:1rem">Place Order <i class="fas fa-arrow-right"></i></button>
+        <p style="text-align:center;font-size:0.75rem;color:var(--warm-grey);margin-top:0.75rem"><i class="fas fa-lock"></i> Secured by 256-bit SSL encryption</p>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function selectAddr(el) { document.querySelectorAll('.addr-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+  function selectPayment(val, el) {
+    document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function toggleNewAddr() {
+    const f = document.getElementById('newAddrForm');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+</script>
+{% endblock %}

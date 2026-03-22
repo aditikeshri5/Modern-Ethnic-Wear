@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .auth-wrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; }
+  .auth-card { background: white; border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+  .auth-logo { font-family: var(--font-display); font-size: 2rem; text-align: center; color: var(--burgundy); margin-bottom: 0.25rem; }
+  .auth-logo span { color: var(--saffron); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Rang<span>manch</span></div>
+    <p style="text-align:center;color:var(--warm-grey);font-size:0.875rem;margin-bottom:2rem">Join the Rangmanch community ✨</p>
+    <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" type="text" name="name" required placeholder="Priya Sharma"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone (optional)</label>
+          <input class="form-control" type="tel" name="phone" placeholder="9876543210"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-control" type="email" name="email" required placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" name="password" required placeholder="Min. 6 characters" minlength="6"/>
+      </div>
+      <div style="margin-bottom:1.5rem">
+        <label style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;cursor:pointer;color:var(--warm-grey)">
+          <input type="checkbox" required style="accent-color:var(--saffron);margin-top:3px"/>
+          I agree to the <a href="#" style="color:var(--saffron)">Terms of Service</a> and <a href="#" style="color:var(--saffron)">Privacy Policy</a>
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+    </form>
+    <p style="text-align:center;font-size:0.875rem;color:var(--warm-grey);margin-top:1.5rem">
+      Already have an account? <a href="/auth/login" style="color:var(--saffron);font-weight:600">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

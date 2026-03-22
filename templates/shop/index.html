@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% block title %}Rangmanch — Where Tradition Meets Trend{% endblock %}
+{% block head %}
+<style>
+  /* HERO CAROUSEL */
+  .hero { position: relative; height: 90vh; overflow: hidden; }
+  .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s ease; }
+  .hero-slide.active { opacity: 1; }
+  .hero-slide img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(107,30,46,0.7) 0%, rgba(28,20,16,0.3) 50%, transparent 100%);
+    display: flex; align-items: center; padding: 0 6rem;
+  }
+  .hero-content { max-width: 600px; animation: heroIn 1s ease 0.3s both; }
+  @keyframes heroIn { from { opacity:0; transform: translateY(40px); } to { opacity:1; transform: translateY(0); } }
+  .hero-label { font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 1rem; }
+  .hero-title { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 300; color: white; line-height: 1.15; margin-bottom: 1.5rem; }
+  .hero-title em { font-style: italic; color: var(--gold-light); }
+  .hero-subtitle { font-size: 1.05rem; color: rgba(255,255,255,0.85); margin-bottom: 2.5rem; line-height: 1.7; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .hero-dots { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem; }
+  .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: var(--transition); }
+  .hero-dot.active { background: white; width: 24px; border-radius: 4px; }
+
+  /* MARQUEE */
+  .marquee-wrap { background: var(--saffron); padding: 0.6rem 0; overflow: hidden; }
+  .marquee-track { display: flex; gap: 0; animation: marquee 20s linear infinite; white-space: nowrap; }
+  .marquee-track span { color: white; font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0 2rem; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* CATEGORY GRID */
+  .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 300px 220px; gap: 1rem; }
+  .cat-card { position: relative; overflow: hidden; border-radius: 12px; cursor: pointer; }
+  .cat-card:first-child { grid-row: span 2; }
+  .cat-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .cat-card:hover img { transform: scale(1.06); }
+  .cat-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(28,20,16,0.7) 0%, transparent 60%); display: flex; align-items: flex-end; padding: 1.5rem; }
+  .cat-name { font-family: var(--font-display); font-size: 1.4rem; color: white; font-weight: 400; }
+  .cat-count { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+
+  /* USP STRIP */
+  .usp-strip { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .usp-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .usp-item { text-align: center; padding: 2rem 1rem; border-right: 1px solid var(--border); }
+  .usp-item:last-child { border-right: none; }
+  .usp-icon { font-size: 1.5rem; color: var(--saffron); margin-bottom: 0.5rem; }
+  .usp-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+  .usp-sub { font-size: 0.8rem; color: var(--warm-grey); }
+
+  /* EDITORIAL BANNER */
+  .editorial { position: relative; background: var(--burgundy); overflow: hidden; }
+  .editorial-img { width: 50%; height: 500px; object-fit: cover; }
+  .editorial-content { position: absolute; top: 50%; right: 0; width: 50%; transform: translateY(-50%); padding: 4rem; }
+  .editorial-content h2 { font-family: var(--font-display); font-size: 3rem; color: white; line-height: 1.2; margin-bottom: 1rem; font-weight: 300; }
+  .editorial-content p { color: rgba(255,255,255,0.7); margin-bottom: 2rem; line-height: 1.7; }
+
+  @media(max-width: 768px) {
+    .hero-overlay { padding: 2rem; }
+    .cat-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .cat-card:first-child { grid-row: span 1; }
+    .usp-grid { grid-template-columns: repeat(2, 1fr); }
+    .editorial img, .editorial-content { width: 100%; position: relative; transform: none; top: auto; right: auto; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO CAROUSEL -->
+<section class="hero">
+  {% for banner in banners %}
+  <div class="hero-slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+    <img src="{{ banner.image_url }}" alt="{{ banner.title }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}"/>
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <p class="hero-label">✦ New Collection 2024</p>
+        <h1 class="hero-title">{{ banner.title|replace(' ', ' <em>')|safe }}<em></em></h1>
+        <p class="hero-subtitle">{{ banner.subtitle }}</p>
+        <div class="hero-actions">
+          <a href="{{ banner.link }}" class="btn btn-primary btn-lg">Shop Now <i class="fas fa-arrow-right"></i></a>
+          <a href="/collections" class="btn btn-outline btn-lg" style="color:white;border-color:white">View Collections</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="hero-dots">
+    {% for banner in banners %}
+    <div class="hero-dot {% if loop.first %}active{% endif %}" onclick="goSlide({{ loop.index0 }})"></div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    {% for _ in range(4) %}
+    <span>✦ Free Shipping on orders above ₹999</span>
+    <span>✦ Handcrafted with Love</span>
+    <span>✦ Authentic Indian Fabrics</span>
+    <span>✦ Easy 7-Day Returns</span>
+    <span>✦ COD Available</span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- USP -->
+<div class="usp-strip">
+  <div class="container">
+    <div class="usp-grid">
+      <div class="usp-item"><div class="usp-icon"><i class="fas fa-truck"></i></div><div class="usp-title">Free Shipping</div><div class="usp-sub">On orders above ₹999</div></div>
+      <div class="usp-item"><div class="usp-icon"><i class="fas fa-undo"></i></div><div class="usp-title">Easy Returns</div><div class="usp-sub">7-day hassle-free return</div></div>
+      <div class="usp-item"><div class="usp-icon"><i class="fas fa-shield-alt"></i></div><div class="usp-title">Secure Payment</div><div class="usp-sub">100% safe via Razorpay</div></div>
+      <div class="usp-item"><div class="usp-icon"><i class="fas fa-hands"></i></div><div class="usp-title">Handcrafted</div><div class="usp-sub">Supporting Indian artisans</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-up">
+      <p class="section-label">Shop by Category</p>
+      <h2 class="section-title">Our <strong>Collections</strong></h2>
+    </div>
+    <div class="cat-grid fade-up">
+      {% for category in categories[:5] %}
+      <a href="/products?category={{ category.slug }}" class="cat-card">
+        <img src="https://picsum.photos/seed/cat{{ loop.index }}/600/800" alt="{{ category.name }}"/>
+        <div class="cat-overlay">
+          <div>
+            <div class="cat-name">{{ category.name }}</div>
+            <div class="cat-count">Explore Collection →</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<section class="section" style="background: var(--saffron-pale);">
+  <div class="container">
+    <div class="section-header fade-up">
+      <p class="section-label">Editor's Pick</p>
+      <h2 class="section-title">Featured <strong>Styles</strong></h2>
+    </div>
+    <div class="grid-4">
+      {% for product in featured %}
+      <div class="card product-card fade-up" style="transition-delay: {{ loop.index0 * 0.1 }}s">
+        <div class="img-wrapper">
+          <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/500' }}" alt="{{ product.name }}" loading="lazy"/>
+          {% if product.discount_percent() > 0 %}
+          <div class="badge-discount">-{{ product.discount_percent() }}%</div>
+          {% endif %}
+          <form action="/wishlist/toggle/{{ product.id }}" method="POST" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button class="wishlist-btn" title="Add to Wishlist"><i class="fas fa-heart"></i></button>
+          </form>
+          <a href="/product/{{ product.slug }}" class="quick-add">Quick View</a>
+        </div>
+        <div class="card-body">
+          <div class="category-tag">{{ product.category.name }}</div>
+          <h3><a href="/product/{{ product.slug }}" style="text-decoration:none;color:inherit">{{ product.name }}</a></h3>
+          <div class="stars mb-1">
+            {% for i in range(5) %}<i class="fas fa-star" {% if i >= product.avg_rating()|int %}style="color:#ddd"{% endif %}></i>{% endfor %}
+          </div>
+          <div class="price">
+            <span class="price-current">₹{{ product.price|int }}</span>
+            {% if product.mrp %}<span class="price-mrp">₹{{ product.mrp|int }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-3">
+      <a href="/products" class="btn btn-outline">View All Products <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- EDITORIAL -->
+<section class="editorial section" style="padding: 0;">
+  <div style="display: flex; flex-wrap: wrap;">
+    <img src="https://picsum.photos/seed/editorial/700/500" alt="Editorial" style="width:50%;min-height:400px;object-fit:cover;"/>
+    <div style="width:50%;background:var(--burgundy);display:flex;align-items:center;padding:4rem;">
+      <div>
+        <p style="color:var(--gold-light);font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:1rem">✦ Story of Craft</p>
+        <h2 style="font-family:var(--font-display);font-size:2.8rem;color:white;line-height:1.2;margin-bottom:1.5rem;font-weight:300">Wear the <em style="font-style:italic;color:var(--gold-light)">Art</em> of India</h2>
+        <p style="color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:2rem;">Each piece in our collection tells the story of skilled artisans, ancient techniques, and the vibrant spirit of Indian culture. Made for the young generation who's proud of their roots.</p>
+        <a href="/collections" class="btn btn-primary">Explore Our Story</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEW ARRIVALS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-up">
+      <p class="section-label">Just In</p>
+      <h2 class="section-title">New <strong>Arrivals</strong></h2>
+    </div>
+    <div class="grid-4">
+      {% for product in new_arrivals %}
+      <div class="card product-card fade-up">
+        <div class="img-wrapper">
+          <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/500' }}" alt="{{ product.name }}" loading="lazy"/>
+          <div class="badge-discount" style="background:var(--burgundy)">NEW</div>
+          <a href="/product/{{ product.slug }}" class="quick-add">Quick View</a>
+        </div>
+        <div class="card-body">
+          <div class="category-tag">{{ product.category.name }}</div>
+          <h3><a href="/product/{{ product.slug }}" style="text-decoration:none;color:inherit">{{ product.name }}</a></h3>
+          <div class="price">
+            <span class="price-current">₹{{ product.price|int }}</span>
+            {% if product.mrp %}<span class="price-mrp">₹{{ product.mrp|int }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- INSTAGRAM SECTION -->
+<section class="section" style="background: var(--charcoal); text-align: center; padding: 4rem 0;">
+  <div class="container">
+    <p style="color: var(--gold-light); font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem">✦ @rangmanchfashion</p>
+    <h2 style="font-family: var(--font-display); font-size: 2.5rem; color: white; font-weight: 300; margin-bottom: 2rem;">Shop Our <em style="font-style:italic;color:var(--gold-light)">Instagram</em></h2>
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-bottom: 2rem;">
+      {% for i in range(6) %}
+      <div style="aspect-ratio:1;overflow:hidden;border-radius:8px;">
+        <img src="https://picsum.photos/seed/insta{{ i }}/300/300" style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
+      </div>
+      {% endfor %}
+    </div>
+    <a href="#" class="btn btn-outline" style="color: var(--gold-light); border-color: var(--gold-light)">Follow on Instagram</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-dot');
+
+  function goSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = n;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }
+
+  setInterval(() => goSlide((currentSlide + 1) % slides.length), 5000);
+</script>
+{% endblock %}

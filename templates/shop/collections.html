@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Collections — Rangmanch{% endblock %}
+{% block content %}
+<div style="background:var(--burgundy);padding:5rem 0;text-align:center;margin-bottom:3rem">
+  <p style="color:var(--gold-light);font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.5rem">✦ Explore</p>
+  <h1 style="font-family:var(--font-display);font-size:3.5rem;color:white;font-weight:300">Our <em style="font-style:italic;color:var(--gold-light)">Collections</em></h1>
+  <p style="color:rgba(255,255,255,0.7);margin-top:1rem;font-size:1.05rem">Handcrafted with love, made for the new-age India</p>
+</div>
+<div class="container" style="padding-bottom:4rem">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:2rem">
+    {% for cat in categories %}
+    <a href="/products?category={{ cat.slug }}" style="text-decoration:none">
+      <div class="card" style="overflow:hidden;position:relative;aspect-ratio:4/3">
+        <img src="https://picsum.photos/seed/col{{ loop.index }}/700/525" alt="{{ cat.name }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(28,20,16,0.8) 0%, transparent 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.75rem">
+          <h2 style="font-family:var(--font-display);font-size:1.8rem;color:white;font-weight:400;margin-bottom:0.25rem">{{ cat.name }}</h2>
+          <p style="color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:0.75rem">{{ cat.description }}</p>
+          <span style="color:var(--gold-light);font-size:0.825rem">Explore Collection →</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

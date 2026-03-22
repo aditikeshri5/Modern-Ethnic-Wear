@@ -1,0 +1,35 @@
+{% extends 'admin/base.html' %}
+{% block title %}Reviews — Rangmanch Admin{% endblock %}
+{% block page_title %}Customer Reviews{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h3>All Reviews ({{ reviews|length }})</h3></div>
+  <table>
+    <thead><tr><th>Customer</th><th>Product</th><th>Rating</th><th>Comment</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for r in reviews %}
+      <tr>
+        <td style="font-size:0.85rem;font-weight:500">{{ r.reviewer.name }}</td>
+        <td style="font-size:0.82rem">{{ r.product.name[:30] }}{% if r.product.name|length > 30 %}…{% endif %}</td>
+        <td>
+          <div style="color:#F59E0B;font-size:0.8rem">
+            {% for i in range(5) %}<i class="fas fa-star" {% if i >= r.rating %}style="color:#E5E7EB"{% endif %}></i>{% endfor %}
+          </div>
+        </td>
+        <td style="font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.comment or '—' }}</td>
+        <td style="font-size:0.8rem;color:var(--warm-grey)">{{ r.created_at.strftime('%d %b %Y') }}</td>
+        <td><span class="tag {% if r.is_approved %}tag-green{% else %}tag-red{% endif %}">{% if r.is_approved %}Approved{% else %}Hidden{% endif %}</span></td>
+        <td>
+          <form action="/admin/reviews/toggle/{{ r.id }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button class="btn btn-sm {% if r.is_approved %}btn-danger{% else %}btn-green{% endif %}">
+              {% if r.is_approved %}<i class="fas fa-eye-slash"></i>{% else %}<i class="fas fa-eye"></i>{% endif %}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

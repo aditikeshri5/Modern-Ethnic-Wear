@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start; padding: 2rem 0 4rem; }
+  .cart-item { display: grid; grid-template-columns: 100px 1fr auto; gap: 1rem; align-items: center; padding: 1rem; background: white; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem; }
+  .cart-item img { width: 100px; height: 125px; object-fit: cover; border-radius: 8px; }
+  .order-summary { background: white; border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); position: sticky; top: 90px; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.75rem; }
+  .summary-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; padding-top: 1rem; border-top: 2px solid var(--border); margin-top: 0.5rem; }
+  @media(max-width:768px) { .cart-layout { grid-template-columns: 1fr; } .cart-item { grid-template-columns: 80px 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 style="font-family:var(--font-display);font-size:2rem;padding:1.5rem 0 0.5rem">Your Cart</h1>
+  {% if items %}
+  <div class="cart-layout">
+    <div>
+      {% for item in items %}
+      <div class="cart-item">
+        <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/200/250' }}" alt="{{ item.product.name }}"/>
+        <div>
+          <a href="/product/{{ item.product.slug }}" style="text-decoration:none;color:inherit;font-weight:600;font-family:var(--font-display);font-size:1.05rem">{{ item.product.name }}</a>
+          <div style="font-size:0.8rem;color:var(--warm-grey);margin:0.25rem 0">
+            {% if item.size %}Size: {{ item.size }}{% endif %}
+            {% if item.color %} · Color: {{ item.color }}{% endif %}
+          </div>
+          <div style="font-weight:700;color:var(--saffron);margin-top:0.25rem">₹{{ item.product.price|int }}</div>
+          <form action="/cart/update/{{ item.id }}" method="POST" style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="quantity-selector" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex">
+              <button type="submit" name="quantity" value="{{ [item.quantity-1, 0]|max }}" class="qty-btn" style="width:32px;height:32px;border:none;background:var(--ivory);cursor:pointer">−</button>
+              <span style="width:40px;height:32px;display:flex;align-items:center;justify-content:center;font-size:0.9rem">{{ item.quantity }}</span>
+              <button type="submit" name="quantity" value="{{ item.quantity+1 }}" class="qty-btn" style="width:32px;height:32px;border:none;background:var(--ivory);cursor:pointer">+</button>
+            </div>
+          </form>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem">
+          <span style="font-weight:700">₹{{ (item.product.price * item.quantity)|int }}</span>
+          <form action="/cart/remove/{{ item.id }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button class="btn btn-sm" style="color:var(--warm-grey);background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:0.3rem 0.6rem"><i class="fas fa-trash-alt"></i></button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+      <a href="/products" style="color:var(--saffron);font-size:0.875rem;text-decoration:none"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+    </div>
+
+    <div class="order-summary">
+      <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:1.25rem">Order Summary</h3>
+      <!-- Coupon -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem">
+        <input type="text" class="form-control" id="couponInput" placeholder="Coupon code" style="padding:0.5rem 0.75rem;font-size:0.85rem"/>
+        <button class="btn btn-outline btn-sm" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div id="couponMsg" style="font-size:0.8rem;margin-bottom:0.75rem"></div>
+
+      <div class="summary-row"><span>Subtotal</span><span>₹{{ subtotal|int }}</span></div>
+      <div class="summary-row" id="discountRow" style="display:none;color:green"><span>Discount</span><span id="discountAmt"></span></div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span>{% if shipping == 0 %}<span style="color:green">FREE</span>{% else %}₹{{ shipping }}{% endif %}</span>
+      </div>
+      <div class="summary-total">
+        <span>Total</span>
+        <span id="totalAmt">₹{{ (subtotal + shipping)|int }}</span>
+      </div>
+      <a href="/cart/checkout" class="btn btn-primary btn-full mt-2" style="display:flex;justify-content:center">Proceed to Checkout <i class="fas fa-arrow-right"></i></a>
+      <div style="text-align:center;font-size:0.75rem;color:var(--warm-grey);margin-top:0.75rem">
+        <i class="fas fa-lock"></i> 100% Secure Checkout
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:6rem 2rem">
+    <i class="fas fa-shopping-bag" style="font-size:4rem;color:var(--border);margin-bottom:1rem"></i>
+    <h2 style="font-family:var(--font-display);font-size:2rem;margin-bottom:0.5rem">Your cart is empty</h2>
+    <p style="color:var(--warm-grey);margin-bottom:1.5rem">Looks like you haven't added anything yet.</p>
+    <a href="/products" class="btn btn-primary">Start Shopping</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function applyCoupon() {
+    const code = document.getElementById('couponInput').value;
+    const fd = new FormData(); fd.append('coupon_code', code);
+    fetch('/cart/apply-coupon', { method: 'POST', body: fd })
+      .then(r => r.json()).then(data => {
+        const msg = document.getElementById('couponMsg');
+        msg.textContent = data.message;
+        msg.style.color = data.success ? 'green' : 'red';
+        if (data.success) {
+          document.getElementById('discountRow').style.display = 'flex';
+          document.getElementById('discountAmt').textContent = '−₹' + data.discount.toFixed(0);
+        }
+      });
+  }
+</script>
+{% endblock %}

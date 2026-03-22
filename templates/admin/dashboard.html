@@ -1,0 +1,122 @@
+{% extends 'admin/base.html' %}
+{% block title %}Dashboard — Rangmanch Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<!-- STAT CARDS -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" style="color:var(--saffron)">₹{{ "{:,.0f}".format(total_revenue) }}</div>
+      </div>
+      <div style="width:48px;height:48px;background:var(--saffron-pale);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--saffron)">
+        <i class="fas fa-rupee-sign"></i>
+      </div>
+    </div>
+    <div class="stat-change up"><i class="fas fa-arrow-up"></i> Paid orders only</div>
+  </div>
+  <div class="stat-card" style="--c:#1D4ED8">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" style="color:#1D4ED8">{{ total_orders }}</div>
+      </div>
+      <div style="width:48px;height:48px;background:#DBEAFE;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#1D4ED8">
+        <i class="fas fa-shopping-bag"></i>
+      </div>
+    </div>
+    <div class="stat-change up"><i class="fas fa-shopping-cart"></i> All time</div>
+  </div>
+  <div class="stat-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value" style="color:#7C3AED">{{ total_customers }}</div>
+      </div>
+      <div style="width:48px;height:48px;background:#F3E8FF;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#7C3AED">
+        <i class="fas fa-users"></i>
+      </div>
+    </div>
+    <div class="stat-change up"><i class="fas fa-user-plus"></i> Registered users</div>
+  </div>
+  <div class="stat-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="stat-label">Active Products</div>
+        <div class="stat-value" style="color:#16A34A">{{ total_products }}</div>
+      </div>
+      <div style="width:48px;height:48px;background:#DCFCE7;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#16A34A">
+        <i class="fas fa-tshirt"></i>
+      </div>
+    </div>
+    <div class="stat-change up"><i class="fas fa-check-circle"></i> Live on store</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- RECENT ORDERS -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Recent Orders</h3>
+      <a href="/admin/orders" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <table>
+      <thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td><a href="/admin/orders/{{ order.id }}" style="color:var(--saffron);font-weight:600">#{{ order.order_number }}</a><br><span style="font-size:0.75rem;color:var(--warm-grey)">{{ order.created_at.strftime('%d %b') }}</span></td>
+          <td>{{ order.customer.name }}</td>
+          <td>₹{{ order.total|int }}</td>
+          <td>
+            <span class="tag {% if order.status == 'delivered' %}tag-green{% elif order.status == 'cancelled' %}tag-red{% elif order.status == 'shipped' %}tag-blue{% elif order.status == 'confirmed' %}tag-saffron{% else %}tag-grey{% endif %}">
+              {{ order.status|title }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LOW STOCK ALERTS -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-exclamation-triangle" style="color:#F59E0B"></i> Low Stock Alerts</h3>
+      <a href="/admin/inventory" class="btn btn-sm btn-outline">Manage</a>
+    </div>
+    {% if low_stock %}
+    <table>
+      <thead><tr><th>Product</th><th>Size/Color</th><th>Stock</th></tr></thead>
+      <tbody>
+        {% for item in low_stock %}
+        <tr>
+          <td style="font-size:0.85rem;font-weight:500">{{ item.product.name }}</td>
+          <td style="font-size:0.8rem;color:var(--warm-grey)">{{ item.size or '—' }} / {{ item.color or '—' }}</td>
+          <td><span class="tag {% if item.quantity == 0 %}tag-red{% else %}tag-gold{% endif %}">{{ item.quantity }} left</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:2rem;color:var(--warm-grey)">
+      <i class="fas fa-check-circle" style="font-size:2rem;color:#16A34A;margin-bottom:0.5rem"></i>
+      <p>All products are well-stocked!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="panel">
+  <div class="panel-header"><h3>Quick Actions</h3></div>
+  <div class="panel-body" style="display:flex;gap:1rem;flex-wrap:wrap">
+    <a href="/admin/products/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+    <a href="/admin/orders?status=pending" class="btn btn-outline"><i class="fas fa-clock"></i> Pending Orders</a>
+    <a href="/admin/coupons" class="btn btn-outline"><i class="fas fa-ticket-alt"></i> Manage Coupons</a>
+    <a href="/analytics/" class="btn btn-outline"><i class="fas fa-chart-bar"></i> View Analytics</a>
+    <a href="/admin/inventory" class="btn btn-outline"><i class="fas fa-boxes"></i> Update Stock</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Login — Rangmanch{% endblock %}
+{% block head %}
+<style>
+  .auth-wrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; }
+  .auth-card { background: white; border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); }
+  .auth-logo { font-family: var(--font-display); font-size: 2rem; text-align: center; color: var(--burgundy); margin-bottom: 0.25rem; }
+  .auth-logo span { color: var(--saffron); }
+  .divider-text { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+  .divider-text::before, .divider-text::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider-text span { font-size: 0.8rem; color: var(--warm-grey); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Rang<span>manch</span></div>
+    <p style="text-align:center;color:var(--warm-grey);font-size:0.875rem;margin-bottom:2rem">Welcome back! Log in to continue.</p>
+    <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-control" type="email" name="email" required placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" name="password" required placeholder="Your password"/>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;cursor:pointer">
+          <input type="checkbox" name="remember" style="accent-color:var(--saffron)"/> Remember me
+        </label>
+        <a href="#" style="font-size:0.85rem;color:var(--saffron)">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Login</button>
+    </form>
+    <div class="divider-text"><span>or</span></div>
+    <p style="text-align:center;font-size:0.875rem;color:var(--warm-grey)">
+      New to Rangmanch? <a href="/auth/register" style="color:var(--saffron);font-weight:600">Create an account</a>
+    </p>
+    <div style="margin-top:1.5rem;padding:1rem;background:var(--saffron-pale);border-radius:12px;font-size:0.8rem;color:var(--warm-grey)">
+      <strong>Demo credentials:</strong><br>
+      Admin: admin@rangmanch.in / admin123<br>
+      Customer: priya@example.com / test123
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'admin/base.html' %}
+{% block title %}Order #{{ order.order_number }} — Rangmanch Admin{% endblock %}
+{% block page_title %}Order #{{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div>
+    <!-- ORDER ITEMS -->
+    <div class="panel" style="margin-bottom:1.5rem">
+      <div class="panel-header"><h3>Order Items</h3></div>
+      <table>
+        <thead><tr><th>Product</th><th>Size/Color</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for item in order.items %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.6rem">
+                <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/50/62' }}" style="width:45px;height:56px;object-fit:cover;border-radius:6px"/>
+                <div style="font-size:0.85rem;font-weight:600">{{ item.product.name }}</div>
+              </div>
+            </td>
+            <td style="font-size:0.8rem;color:var(--warm-grey)">{{ item.size or '—' }} / {{ item.color or '—' }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.unit_price|int }}</td>
+            <td style="font-weight:600">₹{{ item.total_price|int }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div style="padding:1rem;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:0.4rem"><span>Subtotal</span><span>₹{{ order.subtotal|int }}</span></div>
+        {% if order.discount > 0 %}<div style="display:flex;justify-content:space-between;font-size:0.875rem;color:green;margin-bottom:0.4rem"><span>Discount ({{ order.coupon_code }})</span><span>−₹{{ order.discount|int }}</span></div>{% endif %}
+        <div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:0.4rem"><span>Shipping</span><span>{% if order.shipping_charge == 0 %}FREE{% else %}₹{{ order.shipping_charge|int }}{% endif %}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;padding-top:0.75rem;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--saffron)">₹{{ order.total|int }}</span></div>
+      </div>
+    </div>
+
+    <!-- UPDATE STATUS -->
+    <div class="panel">
+      <div class="panel-header"><h3>Update Order Status</h3></div>
+      <div class="panel-body">
+        <form method="POST" style="display:flex;gap:1rem;align-items:flex-end">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-group" style="flex:1;margin:0">
+            <label class="form-label">Status</label>
+            <select class="form-control" name="status">
+              {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled','refunded'] %}
+              <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <!-- ORDER META -->
+    <div class="panel" style="margin-bottom:1.5rem">
+      <div class="panel-header"><h3>Order Information</h3></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.875rem">
+          <div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Order #</div><div style="font-weight:600">#{{ order.order_number }}</div></div>
+          <div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Date</div><div>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</div></div>
+          <div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Status</div><div><span class="tag tag-saffron">{{ order.status|title }}</span></div></div>
+          <div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Payment</div><div><span class="tag {% if order.payment_status == 'paid' %}tag-green{% elif order.payment_status == 'failed' %}tag-red{% else %}tag-grey{% endif %}">{{ order.payment_status|title }}</span></div></div>
+          <div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Method</div><div>{{ order.payment_method|upper if order.payment_method else '—' }}</div></div>
+          {% if order.razorpay_payment_id %}<div><div style="color:var(--warm-grey);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Razorpay ID</div><div style="font-size:0.75rem;word-break:break-all">{{ order.razorpay_payment_id }}</div></div>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMER -->
+    <div class="panel" style="margin-bottom:1.5rem">
+      <div class="panel-header"><h3>Customer</h3></div>
+      <div class="panel-body">
+        <div style="font-weight:600">{{ order.customer.name }}</div>
+        <div style="font-size:0.85rem;color:var(--warm-grey)">{{ order.customer.email }}</div>
+        <div style="font-size:0.85rem;color:var(--warm-grey)">{{ order.customer.phone or '' }}</div>
+        <a href="/admin/customers" class="btn btn-sm btn-outline" style="margin-top:0.75rem">View Profile</a>
+      </div>
+    </div>
+
+    <!-- SHIPPING ADDRESS -->
+    <div class="panel">
+      <div class="panel-header"><h3>Shipping Address</h3></div>
+      <div class="panel-body" style="font-size:0.875rem;line-height:1.8">
+        {% set addr = order.get_shipping_address() %}
+        <div style="font-weight:600">{{ addr.name }}</div>
+        <div>{{ addr.line1 }}{% if addr.line2 %}, {{ addr.line2 }}{% endif %}</div>
+        <div>{{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}</div>
+        <div>📱 {{ addr.phone }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

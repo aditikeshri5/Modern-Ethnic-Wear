@@ -1,0 +1,136 @@
+{% extends 'admin/base.html' %}
+{% block title %}Analytics — Rangmanch Admin{% endblock %}
+{% block page_title %}Business Analytics{% endblock %}
+{% block content %}
+
+<!-- KPI Summary Cards -->
+<div id="kpiGrid" class="stat-grid" style="margin-bottom:2rem">
+  <div class="stat-card"><div class="stat-label">This Month Revenue</div><div class="stat-value" id="kpi_rev" style="color:var(--saffron)">Loading…</div><div class="stat-change" id="kpi_rev_g"></div></div>
+  <div class="stat-card"><div class="stat-label">This Month Orders</div><div class="stat-value" id="kpi_ord" style="color:#1D4ED8">—</div><div class="stat-change" id="kpi_ord_g"></div></div>
+  <div class="stat-card"><div class="stat-label">New Customers</div><div class="stat-value" id="kpi_cust" style="color:#7C3AED">—</div><div class="stat-change" id="kpi_cust_g" style="color:var(--warm-grey)"></div></div>
+  <div class="stat-card"><div class="stat-label">Avg Order Value</div><div class="stat-value" id="kpi_aov" style="color:#16A34A">—</div></div>
+</div>
+
+<!-- Revenue Chart -->
+<div class="panel" style="margin-bottom:1.5rem">
+  <div class="panel-header">
+    <h3><i class="fas fa-chart-area" style="color:var(--saffron)"></i> Revenue Overview</h3>
+    <div style="display:flex;gap:0.5rem">
+      <button class="btn btn-sm btn-outline" onclick="loadRevenue('daily')">Daily</button>
+      <button class="btn btn-sm btn-primary" id="btnMonthly" onclick="loadRevenue('monthly')">Monthly</button>
+      <button class="btn btn-sm btn-outline" onclick="loadRevenue('weekly')">Weekly</button>
+    </div>
+  </div>
+  <div class="panel-body"><canvas id="revenueChart" height="100"></canvas></div>
+</div>
+
+<div class="grid-2" style="margin-bottom:1.5rem">
+  <!-- Category Breakdown -->
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-chart-pie" style="color:var(--saffron)"></i> Revenue by Category</h3></div>
+    <div class="panel-body"><canvas id="categoryChart" height="220"></canvas></div>
+  </div>
+  <!-- Order Status -->
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-chart-donut" style="color:var(--saffron)"></i> Order Status Distribution</h3></div>
+    <div class="panel-body"><canvas id="statusChart" height="220"></canvas></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Top Products -->
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-fire" style="color:var(--saffron)"></i> Top Selling Products</h3></div>
+    <div class="panel-body"><canvas id="productsChart" height="220"></canvas></div>
+  </div>
+  <!-- Customer Segments -->
+  <div class="panel">
+    <div class="panel-header"><h3><i class="fas fa-users" style="color:var(--saffron)"></i> Customer Segments</h3></div>
+    <div class="panel-body"><canvas id="segmentChart" height="220"></canvas></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SAFFRON = '#E8621A', BURGUNDY = '#6B1E2E', GOLD = '#C8993A';
+const COLORS = [SAFFRON, '#1D4ED8', '#16A34A', BURGUNDY, GOLD, '#7C3AED', '#EC4899', '#0891B2'];
+
+let revenueChart, categoryChart, statusChart, productsChart, segmentChart;
+
+function createChart(id, type, labels, datasets, options = {}) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type, data: { labels, datasets },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 11 } } } }, ...options }
+  });
+}
+
+async function loadRevenue(period = 'monthly') {
+  const res = await fetch(`/analytics/api/revenue?period=${period}`);
+  const data = await res.json();
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = createChart('revenueChart', 'line', data.labels, [
+    { label: 'Revenue (₹)', data: data.revenue, borderColor: SAFFRON, backgroundColor: 'rgba(232,98,26,0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: SAFFRON },
+    { label: 'Orders', data: data.orders, borderColor: '#1D4ED8', backgroundColor: 'rgba(29,78,216,0.05)', fill: true, tension: 0.4, yAxisID: 'y2', pointRadius: 4, pointBackgroundColor: '#1D4ED8' }
+  ], { scales: { y: { position: 'left', grid: { color: '#F3F4F6' } }, y2: { position: 'right', grid: { drawOnChartArea: false } } } });
+}
+
+async function loadCategory() {
+  const res = await fetch('/analytics/api/category-breakdown');
+  const data = await res.json();
+  categoryChart = createChart('categoryChart', 'doughnut', data.categories, [
+    { data: data.revenue, backgroundColor: COLORS, borderWidth: 2, borderColor: 'white' }
+  ], { cutout: '60%' });
+}
+
+async function loadStatus() {
+  const res = await fetch('/analytics/api/order-status');
+  const data = await res.json();
+  const colorMap = { pending: '#F59E0B', confirmed: SAFFRON, processing: '#1D4ED8', shipped: '#7C3AED', delivered: '#16A34A', cancelled: '#DC2626', refunded: '#6B7280' };
+  statusChart = createChart('statusChart', 'pie', data.statuses, [
+    { data: data.counts, backgroundColor: data.statuses.map(s => colorMap[s] || GOLD), borderWidth: 2, borderColor: 'white' }
+  ]);
+}
+
+async function loadTopProducts() {
+  const res = await fetch('/analytics/api/top-products');
+  const data = await res.json();
+  productsChart = createChart('productsChart', 'bar', data.products.map(n => n.length > 20 ? n.slice(0,20)+'…' : n), [
+    { label: 'Units Sold', data: data.units, backgroundColor: COLORS.map(c => c + 'CC'), borderRadius: 6 }
+  ], { indexAxis: 'y', plugins: { legend: { display: false } } });
+}
+
+async function loadSegments() {
+  const res = await fetch('/analytics/api/customer-segments');
+  const data = await res.json();
+  segmentChart = createChart('segmentChart', 'polarArea', data.segments, [
+    { data: data.counts, backgroundColor: COLORS.map(c => c + '99'), borderColor: COLORS }
+  ]);
+}
+
+async function loadSummary() {
+  const res = await fetch('/analytics/api/summary');
+  const d = await res.json();
+  document.getElementById('kpi_rev').textContent = '₹' + d.this_month_revenue.toLocaleString('en-IN', {maximumFractionDigits:0});
+  const rg = document.getElementById('kpi_rev_g');
+  rg.textContent = (d.revenue_growth >= 0 ? '↑ ' : '↓ ') + Math.abs(d.revenue_growth) + '% vs last month';
+  rg.className = 'stat-change ' + (d.revenue_growth >= 0 ? 'up' : 'down');
+  document.getElementById('kpi_ord').textContent = d.this_month_orders;
+  const og = document.getElementById('kpi_ord_g');
+  og.textContent = (d.order_growth >= 0 ? '↑ ' : '↓ ') + Math.abs(d.order_growth) + '% vs last month';
+  og.className = 'stat-change ' + (d.order_growth >= 0 ? 'up' : 'down');
+  document.getElementById('kpi_cust').textContent = d.new_customers;
+  document.getElementById('kpi_cust_g').textContent = d.total_customers + ' total customers';
+  document.getElementById('kpi_aov').textContent = '₹' + d.avg_order_value.toLocaleString('en-IN', {maximumFractionDigits:0});
+}
+
+// Load all
+loadSummary();
+loadRevenue();
+loadCategory();
+loadStatus();
+loadTopProducts();
+loadSegments();
+</script>
+{% endblock %}

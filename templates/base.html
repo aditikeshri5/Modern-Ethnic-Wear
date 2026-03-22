@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Rangmanch — Indo Ethnic Wear{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --saffron: #E8621A;
+      --saffron-light: #F4874B;
+      --saffron-pale: #FDF0E8;
+      --burgundy: #6B1E2E;
+      --gold: #C8993A;
+      --gold-light: #E8C068;
+      --ivory: #FAF6F0;
+      --charcoal: #1C1410;
+      --warm-grey: #8A7A72;
+      --border: #E8DDD4;
+      --surface: #FFFFFF;
+      --shadow: 0 4px 24px rgba(28,20,16,0.08);
+      --shadow-lg: 0 16px 48px rgba(28,20,16,0.14);
+      --radius: 12px;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--ivory); color: var(--charcoal); line-height: 1.6; }
+
+    /* NAVBAR */
+    .navbar {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(250,246,240,0.95); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px;
+    }
+    .nav-logo {
+      font-family: var(--font-display); font-size: 1.8rem; font-weight: 600;
+      color: var(--burgundy); text-decoration: none; letter-spacing: 0.02em;
+    }
+    .nav-logo span { color: var(--saffron); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--charcoal); font-size: 0.9rem;
+      font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+      transition: var(--transition); position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0;
+      height: 2px; background: var(--saffron); transition: var(--transition);
+    }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover { color: var(--saffron); }
+    .nav-actions { display: flex; align-items: center; gap: 1.2rem; }
+    .nav-icon {
+      color: var(--charcoal); font-size: 1.15rem; text-decoration: none;
+      position: relative; transition: var(--transition);
+    }
+    .nav-icon:hover { color: var(--saffron); }
+    .badge {
+      position: absolute; top: -8px; right: -8px;
+      background: var(--saffron); color: white; border-radius: 50%;
+      width: 18px; height: 18px; font-size: 0.65rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-nav {
+      background: var(--saffron); color: white; padding: 0.5rem 1.2rem;
+      border-radius: 50px; text-decoration: none; font-size: 0.85rem;
+      font-weight: 500; transition: var(--transition);
+    }
+    .btn-nav:hover { background: var(--burgundy); transform: translateY(-1px); }
+
+    /* SEARCH BAR */
+    .search-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; padding: 0.4rem 1rem; transition: var(--transition);
+    }
+    .search-bar:focus-within { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,98,26,0.1); }
+    .search-bar input {
+      border: none; outline: none; background: transparent;
+      font-family: var(--font-body); font-size: 0.875rem; width: 180px;
+    }
+    .search-bar button { background: none; border: none; color: var(--warm-grey); cursor: pointer; }
+
+    /* ALERTS */
+    .flash-messages { position: fixed; top: 80px; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .alert {
+      padding: 0.85rem 1.2rem; border-radius: var(--radius);
+      font-size: 0.9rem; display: flex; align-items: center; gap: 0.75rem;
+      animation: slideIn 0.3s ease; box-shadow: var(--shadow); max-width: 360px;
+    }
+    @keyframes slideIn { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    .alert-success { background: #F0FDF4; border: 1px solid #86EFAC; color: #166534; }
+    .alert-danger  { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
+    .alert-info    { background: #EFF6FF; border: 1px solid #93C5FD; color: #1D4ED8; }
+    .alert-warning { background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.75rem 1.75rem; border-radius: 50px; font-family: var(--font-body);
+      font-size: 0.9rem; font-weight: 500; cursor: pointer; text-decoration: none;
+      border: 2px solid transparent; transition: var(--transition); letter-spacing: 0.03em;
+    }
+    .btn-primary { background: var(--saffron); color: white; border-color: var(--saffron); }
+    .btn-primary:hover { background: var(--burgundy); border-color: var(--burgundy); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,98,26,0.3); }
+    .btn-outline { background: transparent; color: var(--saffron); border-color: var(--saffron); }
+    .btn-outline:hover { background: var(--saffron); color: white; }
+    .btn-dark { background: var(--charcoal); color: white; border-color: var(--charcoal); }
+    .btn-dark:hover { background: var(--burgundy); border-color: var(--burgundy); }
+    .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.8rem; }
+    .btn-lg { padding: 1rem 2.5rem; font-size: 1rem; }
+    .btn-full { width: 100%; }
+
+    /* CARDS */
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden; transition: var(--transition);
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+    /* PRODUCT CARD */
+    .product-card { position: relative; }
+    .product-card .img-wrapper { position: relative; overflow: hidden; aspect-ratio: 3/4; }
+    .product-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+    .product-card:hover img { transform: scale(1.06); }
+    .product-card .badge-discount {
+      position: absolute; top: 12px; left: 12px;
+      background: var(--saffron); color: white; padding: 0.2rem 0.6rem;
+      border-radius: 50px; font-size: 0.75rem; font-weight: 700;
+    }
+    .product-card .wishlist-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: white; border: none; border-radius: 50%; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: var(--transition); box-shadow: var(--shadow);
+    }
+    .product-card .wishlist-btn:hover, .product-card .wishlist-btn.active { color: #E53E3E; }
+    .product-card .card-body { padding: 1rem; }
+    .product-card .category-tag {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--warm-grey); margin-bottom: 0.25rem;
+    }
+    .product-card h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.3; }
+    .product-card .price { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .product-card .price-current { font-size: 1rem; font-weight: 600; color: var(--charcoal); }
+    .product-card .price-mrp { font-size: 0.85rem; color: var(--warm-grey); text-decoration: line-through; }
+    .product-card .stars { color: var(--gold); font-size: 0.8rem; }
+    .quick-add { position: absolute; bottom: 0; left: 0; right: 0; background: var(--charcoal); color: white; text-align: center; padding: 0.75rem; font-size: 0.85rem; font-weight: 500; transform: translateY(100%); transition: var(--transition); cursor: pointer; text-decoration: none; display: block; }
+    .product-card:hover .quick-add { transform: translateY(0); }
+
+    /* SECTION */
+    .section { padding: 5rem 0; }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--saffron); margin-bottom: 0.5rem; }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; color: var(--charcoal); }
+    .section-title strong { font-weight: 600; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem; }
+
+    /* FOOTER */
+    footer {
+      background: var(--charcoal); color: rgba(255,255,255,0.7);
+      padding: 4rem 0 2rem;
+    }
+    footer .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+    footer h4 { color: white; font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 1rem; }
+    footer ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.875rem; transition: var(--transition); }
+    footer a:hover { color: var(--gold-light); }
+    footer .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--charcoal); }
+    .form-control {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-family: var(--font-body); font-size: 0.9rem;
+      background: white; transition: var(--transition); outline: none;
+    }
+    .form-control:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(232,98,26,0.1); }
+    select.form-control { cursor: pointer; }
+
+    /* BREADCRUMB */
+    .breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-size: 0.825rem; color: var(--warm-grey); margin-bottom: 2rem; }
+    .breadcrumb a { color: var(--warm-grey); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--saffron); }
+    .breadcrumb span { color: var(--charcoal); }
+
+    /* TAG PILLS */
+    .tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500; }
+    .tag-saffron { background: var(--saffron-pale); color: var(--saffron); }
+    .tag-gold { background: #FDF8EE; color: var(--gold); }
+    .tag-green { background: #F0FDF4; color: #166534; }
+    .tag-red { background: #FEF2F2; color: #991B1B; }
+    .tag-grey { background: #F3F4F6; color: #6B7280; }
+
+    /* UTILITIES */
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .d-flex { display: flex; }
+    .align-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.5rem; }
+    .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+    /* MOBILE */
+    .hamburger { display: none; background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--charcoal); }
+    @media(max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: block; }
+      .search-bar { display: none; }
+      footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    }
+    @media(max-width: 480px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      footer .footer-grid { grid-template-columns: 1fr; }
+    }
+
+    /* SCROLL ANIMATIONS */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Flash Messages -->
+  <div class="flash-messages" id="flashMessages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Rang<span>manch</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/collections">Collections</a></li>
+        <li><a href="/products">All Products</a></li>
+        <li><a href="/products?occasion=Festive">Festive</a></li>
+        <li><a href="/products?occasion=Bridal">Bridal</a></li>
+      </ul>
+      <form class="search-bar" action="/search" method="GET">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="text" name="q" placeholder="Search designs..." value="{{ request.args.get('q','') }}"/>
+        <button type="submit"><i class="fas fa-search"></i></button>
+      </form>
+      <div class="nav-actions">
+        {% if current_user.is_authenticated %}
+          <a href="/wishlist" class="nav-icon"><i class="fas fa-heart"></i></a>
+          <a href="/cart/" class="nav-icon">
+            <i class="fas fa-shopping-bag"></i>
+            {% set cart_count = current_user.cart_items|length %}
+            {% if cart_count > 0 %}<span class="badge">{{ cart_count }}</span>{% endif %}
+          </a>
+          <div style="position:relative">
+            <a href="/auth/profile" class="nav-icon" title="{{ current_user.name }}"><i class="fas fa-user-circle"></i></a>
+          </div>
+          {% if current_user.role == 'admin' %}
+            <a href="/admin/" class="btn-nav"><i class="fas fa-cog"></i> Admin</a>
+          {% else %}
+            <a href="/auth/logout" class="btn-nav">Logout</a>
+          {% endif %}
+        {% else %}
+          <a href="/auth/login" class="nav-icon"><i class="fas fa-user"></i></a>
+          <a href="/auth/register" class="btn-nav">Sign Up</a>
+        {% endif %}
+      </div>
+      <button class="hamburger" onclick="document.querySelector('.nav-links').style.display='flex'">☰</button>
+    </div>
+  </nav>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div style="font-family:var(--font-display);font-size:1.8rem;color:white;margin-bottom:1rem;">Rang<span style="color:var(--gold-light)">manch</span></div>
+          <p style="font-size:0.875rem;line-height:1.8;max-width:300px;">Where tradition meets trend. Curated Indo-ethnic wear for the bold, beautiful & young India.</p>
+          <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+            <a href="#"><i class="fab fa-instagram" style="font-size:1.2rem"></i></a>
+            <a href="#"><i class="fab fa-pinterest" style="font-size:1.2rem"></i></a>
+            <a href="#"><i class="fab fa-youtube" style="font-size:1.2rem"></i></a>
+            <a href="#"><i class="fab fa-whatsapp" style="font-size:1.2rem"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <ul>
+            <li><a href="/products?category=kurtas-kurtis">Kurtas & Kurtis</a></li>
+            <li><a href="/products?category=lehengas">Lehengas</a></li>
+            <li><a href="/products?category=sarees">Sarees</a></li>
+            <li><a href="/products?category=salwar-suits">Salwar Suits</a></li>
+            <li><a href="/products?category=co-ord-sets">Co-ord Sets</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Customer Care</h4>
+          <ul>
+            <li><a href="#">Size Guide</a></li>
+            <li><a href="#">Track Order</a></li>
+            <li><a href="#">Returns & Exchange</a></li>
+            <li><a href="#">Shipping Policy</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Our Promise</h4>
+          <ul>
+            <li><a href="#">Handcrafted Pieces</a></li>
+            <li><a href="#">Authentic Fabrics</a></li>
+            <li><a href="#">Artisan Partnerships</a></li>
+            <li><a href="#">Sustainable Fashion</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2024 Rangmanch. Made with ❤️ for Indian fashion.</span>
+        <div style="display:flex;gap:1rem;align-items:center">
+          <img src="https://cdn.razorpay.com/static/assets/logo/razorpay.svg" alt="Razorpay" style="height:18px;filter:brightness(0.7)"/>
+          <span>·</span>
+          <span>UPI · Cards · NetBanking · EMI · COD</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Auto-dismiss alerts
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(a => a.style.opacity = '0');
+    }, 4000);
+
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

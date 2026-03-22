@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+{% block title %}Categories — Rangmanch Admin{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-header"><h3>All Categories</h3></div>
+    <table>
+      <thead><tr><th>Name</th><th>Slug</th><th>Products</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for c in categories %}
+        <tr>
+          <td style="font-weight:600">{{ c.name }}</td>
+          <td style="font-family:monospace;font-size:0.8rem;color:var(--warm-grey)">{{ c.slug }}</td>
+          <td>{{ c.products|length }}</td>
+          <td><span class="tag {% if c.is_active %}tag-green{% else %}tag-red{% endif %}">{% if c.is_active %}Active{% else %}Hidden{% endif %}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3>Add New Category</h3></div>
+    <div class="panel-body">
+      <form action="/admin/categories/add" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="form-group">
+          <label class="form-label">Category Name *</label>
+          <input class="form-control" name="name" required placeholder="e.g. Fusion Wear"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="description" rows="3" placeholder="Brief description..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Category</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

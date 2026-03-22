@@ -1,0 +1,79 @@
+{% extends 'admin/base.html' %}
+{% block title %}Inventory — Rangmanch Admin{% endblock %}
+{% block page_title %}Inventory Management{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <h3>Stock Levels</h3>
+    <div style="display:flex;gap:0.5rem;align-items:center">
+      <input type="text" class="form-control" id="invSearch" placeholder="Search product..." style="width:200px;padding:0.4rem 0.75rem" oninput="filterInv()"/>
+      <select class="form-control" id="stockFilter" style="width:150px;padding:0.4rem 0.75rem" onchange="filterInv()">
+        <option value="">All Stock</option>
+        <option value="low">Low Stock</option>
+        <option value="out">Out of Stock</option>
+        <option value="ok">In Stock</option>
+      </select>
+    </div>
+  </div>
+  <table id="invTable">
+    <thead>
+      <tr><th>Product</th><th>Size</th><th>Color</th><th>Stock</th><th>Low Stock Alert</th><th>Update</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr class="inv-row" data-name="{{ item.product.name|lower }}" data-stock="{{ item.quantity }}">
+        <td>
+          <div style="font-weight:600;font-size:0.875rem">{{ item.product.name }}</div>
+          <div style="font-size:0.75rem;color:var(--warm-grey)">{{ item.product.category.name }}</div>
+        </td>
+        <td>{{ item.size or '—' }}</td>
+        <td>{{ item.color or '—' }}</td>
+        <td>
+          <span class="tag {% if item.quantity == 0 %}tag-red{% elif item.is_low_stock() %}tag-gold{% else %}tag-green{% endif %}">
+            {{ item.quantity }} units
+          </span>
+        </td>
+        <td>Alert at {{ item.low_stock_threshold }} units</td>
+        <td>
+          <div style="display:flex;gap:0.4rem;align-items:center">
+            <input type="number" id="qty_{{ item.id }}" value="{{ item.quantity }}" min="0" style="width:70px;padding:0.35rem 0.5rem;border:1.5px solid var(--border);border-radius:6px;font-size:0.8rem"/>
+            <button class="btn btn-sm btn-green" onclick="updateStock({{ item.id }})"><i class="fas fa-save"></i></button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function filterInv() {
+    const q = document.getElementById('invSearch').value.toLowerCase();
+    const sf = document.getElementById('stockFilter').value;
+    document.querySelectorAll('.inv-row').forEach(row => {
+      const name = row.dataset.name;
+      const stock = parseInt(row.dataset.stock);
+      let show = name.includes(q);
+      if (sf === 'low') show = show && stock > 0 && stock <= 5;
+      else if (sf === 'out') show = show && stock === 0;
+      else if (sf === 'ok') show = show && stock > 5;
+      row.style.display = show ? '' : 'none';
+    });
+  }
+
+  async function updateStock(invId) {
+    const qty = document.getElementById('qty_' + invId).value;
+    const fd = new FormData();
+    fd.append('inv_id', invId); fd.append('quantity', qty);
+    const res = await fetch('/admin/inventory/update', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      const btn = event.target.closest('button');
+      btn.innerHTML = '<i class="fas fa-check"></i>';
+      btn.style.background = '#16A34A'; btn.style.color = 'white';
+      setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; btn.style.background = ''; btn.style.color = ''; }, 1500);
+    }
+  }
+</script>
+{% endblock %}

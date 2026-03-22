@@ -1,0 +1,72 @@
+{% extends 'admin/base.html' %}
+{% block title %}Coupons — Rangmanch Admin{% endblock %}
+{% block page_title %}Coupon Management{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <!-- COUPON LIST -->
+  <div class="panel">
+    <div class="panel-header"><h3>Active Coupons</h3></div>
+    <table>
+      <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Usage</th><th>Min Order</th><th>Status</th><th>Toggle</th></tr></thead>
+      <tbody>
+        {% for c in coupons %}
+        <tr>
+          <td><strong style="font-family:monospace;color:var(--saffron)">{{ c.code }}</strong></td>
+          <td style="font-size:0.8rem">{{ c.discount_type|title }}</td>
+          <td>{% if c.discount_type == 'percent' %}{{ c.discount_value|int }}%{% else %}₹{{ c.discount_value|int }}{% endif %}</td>
+          <td style="font-size:0.8rem">{{ c.used_count }}/{{ c.max_uses }}</td>
+          <td style="font-size:0.8rem">₹{{ c.min_order|int }}</td>
+          <td><span class="tag {% if c.is_active %}tag-green{% else %}tag-red{% endif %}">{% if c.is_active %}Active{% else %}Paused{% endif %}</span></td>
+          <td>
+            <form action="/admin/coupons/toggle/{{ c.id }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn btn-sm {% if c.is_active %}btn-danger{% else %}btn-green{% endif %}">
+                {% if c.is_active %}<i class="fas fa-pause"></i>{% else %}<i class="fas fa-play"></i>{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CREATE COUPON -->
+  <div class="panel">
+    <div class="panel-header"><h3>Create New Coupon</h3></div>
+    <div class="panel-body">
+      <form action="/admin/coupons/add" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="form-group">
+          <label class="form-label">Coupon Code *</label>
+          <input class="form-control" name="code" required placeholder="e.g. DIWALI30" style="font-family:monospace;text-transform:uppercase"/>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Discount Type *</label>
+            <select class="form-control" name="discount_type">
+              <option value="percent">Percentage (%)</option>
+              <option value="flat">Flat Amount (₹)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discount Value *</label>
+            <input class="form-control" type="number" name="discount_value" required placeholder="20" step="0.01"/>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Minimum Order (₹)</label>
+            <input class="form-control" type="number" name="min_order" placeholder="500" step="1"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Uses</label>
+            <input class="form-control" type="number" name="max_uses" placeholder="100"/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Create Coupon</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

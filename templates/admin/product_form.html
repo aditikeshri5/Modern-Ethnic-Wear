@@ -1,0 +1,169 @@
+{% extends 'admin/base.html' %}
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} Product — Rangmanch Admin{% endblock %}
+{% block page_title %}{% if product %}Edit Product{% else %}Add New Product{% endif %}{% endblock %}
+{% block content %}
+<div style="max-width: 900px;">
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="grid-2">
+      <!-- LEFT -->
+      <div>
+        <div class="panel" style="margin-bottom:1.5rem">
+          <div class="panel-header"><h3>Product Details</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Product Name *</label>
+              <input class="form-control" name="name" required value="{{ product.name if product else '' }}" placeholder="e.g. Gulabi Block Print Kurta"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" name="description" rows="4" placeholder="Describe the product...">{{ product.description if product else '' }}</textarea>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">Selling Price (₹) *</label>
+                <input class="form-control" type="number" name="price" step="0.01" required value="{{ product.price if product else '' }}" placeholder="1299"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">MRP (₹)</label>
+                <input class="form-control" type="number" name="mrp" step="0.01" value="{{ product.mrp if product else '' }}" placeholder="1799"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cost Price (₹)</label>
+                <input class="form-control" type="number" name="cost_price" step="0.01" value="{{ product.cost_price if product else '' }}" placeholder="600"/>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select class="form-control" name="category_id" required>
+                  {% for cat in categories %}
+                  <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fabric</label>
+                <input class="form-control" name="fabric" value="{{ product.fabric if product else '' }}" placeholder="Cotton, Silk, Georgette…"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Occasion</label>
+              <select class="form-control" name="occasion">
+                <option value="">Select occasion</option>
+                {% for occ in ['Casual', 'Festive', 'Bridal', 'Wedding', 'Party', 'Office', 'Daily Wear'] %}
+                <option value="{{ occ }}" {% if product and product.occasion == occ %}selected{% endif %}>{{ occ }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <input type="checkbox" name="is_featured" id="featured" style="accent-color:var(--saffron)" {% if product and product.is_featured %}checked{% endif %}/>
+              <label for="featured" style="font-size:0.875rem;cursor:pointer">Mark as Featured Product</label>
+            </div>
+            {% if product %}
+            <div style="margin-top:0.75rem;display:flex;align-items:center;gap:0.75rem">
+              <input type="checkbox" name="is_active" id="active" style="accent-color:var(--saffron)" {% if product.is_active %}checked{% endif %}/>
+              <label for="active" style="font-size:0.875rem;cursor:pointer">Active (visible in store)</label>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- SIZES & COLORS (only on add) -->
+        {% if not product %}
+        <div class="panel" style="margin-bottom:1.5rem">
+          <div class="panel-header"><h3>Sizes & Colors</h3></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Available Sizes</label>
+              <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+                {% for sz in ['XS','S','M','L','XL','XXL','Free Size'] %}
+                <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem">
+                  <input type="checkbox" name="sizes" value="{{ sz }}" style="accent-color:var(--saffron)"/> {{ sz }}
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Available Colors (comma separated)</label>
+              <input class="form-control" id="colorInput" placeholder="e.g. Pink, Ivory, Royal Blue" oninput="updateColorList()"/>
+              <div id="colorPreview" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem"></div>
+              <div id="colorHiddens"></div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="panel" style="margin-bottom:1.5rem">
+          <div class="panel-header"><h3>Product Images</h3></div>
+          <div class="panel-body">
+            {% if product and product.get_images() %}
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:1rem">
+              {% for img in product.get_images() %}
+              <img src="{{ img }}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--border)"/>
+              {% endfor %}
+            </div>
+            <p style="font-size:0.8rem;color:var(--warm-grey);margin-bottom:0.75rem">Upload new images to add (existing images kept)</p>
+            {% endif %}
+            <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer" onclick="document.getElementById('imgInput').click()" id="dropZone">
+              <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--warm-grey);margin-bottom:0.5rem"></i>
+              <p style="font-size:0.875rem;color:var(--warm-grey)">Click to upload product images</p>
+              <p style="font-size:0.75rem;color:var(--border)">PNG, JPG, WEBP · Max 16MB</p>
+              <input type="file" id="imgInput" name="images" multiple accept="image/*" style="display:none" onchange="previewImages(this)"/>
+            </div>
+            <div id="imgPreview" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem"></div>
+          </div>
+        </div>
+
+        {% if not product %}
+        <div class="panel">
+          <div class="panel-header"><h3>Initial Stock (per variant)</h3></div>
+          <div class="panel-body">
+            <p style="font-size:0.8rem;color:var(--warm-grey);margin-bottom:0.75rem">After adding sizes & colors above, the stock table will appear here automatically.</p>
+            <div id="stockTable"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;margin-top:1rem">
+      <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> {% if product %}Update Product{% else %}Add Product{% endif %}</button>
+      <a href="/admin/products" class="btn btn-outline btn-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function previewImages(input) {
+    const preview = document.getElementById('imgPreview');
+    preview.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+      const url = URL.createObjectURL(f);
+      const img = document.createElement('img');
+      img.src = url; img.style = 'width:80px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border)';
+      preview.appendChild(img);
+    });
+  }
+
+  function updateColorList() {
+    const raw = document.getElementById('colorInput').value;
+    const colors = raw.split(',').map(c => c.trim()).filter(c => c);
+    const preview = document.getElementById('colorPreview');
+    const hidden = document.getElementById('colorHiddens');
+    preview.innerHTML = ''; hidden.innerHTML = '';
+    colors.forEach(c => {
+      const span = document.createElement('span');
+      span.className = 'tag tag-saffron'; span.textContent = c;
+      preview.appendChild(span);
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = 'colors'; inp.value = c;
+      hidden.appendChild(inp);
+    });
+  }
+</script>
+{% endblock %}
