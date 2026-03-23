@@ -142,8 +142,8 @@ def seed_data():
             price=pd['price'], mrp=pd['mrp'], cost_price=pd['cost'],
             category_id=cat.id,
             images=json.dumps([
-                f'https://picsum.photos/seed/{slug}/600/800',
-                f'https://picsum.photos/seed/{slug}2/600/800',
+                f'/static/images/products/{slug}.png',
+                f'/static/images/products/{slug}.png',
             ]),
             sizes=json.dumps(pd['sizes']),
             colors=json.dumps(pd['colors']),
@@ -162,11 +162,11 @@ def seed_data():
     # Banners
     banners = [
         Banner(title='New Season, New You', subtitle='Shop our festive edit — up to 40% off',
-               image_url='https://picsum.photos/seed/banner1/1400/600', link='/products', order=1),
+               image_url='/static/images/banners/banner1.png', link='/products', order=1),
         Banner(title='Bridal Looks 2024', subtitle='Curated for the modern Indian bride',
-               image_url='https://picsum.photos/seed/banner2/1400/600', link='/products?category=lehengas', order=2),
+               image_url='/static/images/banners/banner2.png', link='/products?category=lehengas', order=2),
         Banner(title='Sustainable Fashion', subtitle='Handcrafted with love for the planet',
-               image_url='https://picsum.photos/seed/banner3/1400/600', link='/collections', order=3),
+               image_url='/static/images/banners/banner3.png', link='/collections', order=3),
     ]
     for b in banners:
         db.session.add(b)
