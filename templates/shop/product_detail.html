@@ -56,7 +56,7 @@
     <!-- GALLERY -->
     <div class="img-gallery">
       <div class="img-main">
-        <img id="mainImg" src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/600/800' }}" alt="{{ product.name }}"/>
+        <img id="mainImg" src="{{ product.get_images()[0] if product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ product.name }}"/>
       </div>
       <div class="img-thumbs">
         {% for img in product.get_images() %}
@@ -245,7 +245,7 @@
       {% for p in related %}
       <div class="card product-card">
         <div class="img-wrapper">
-          <img src="{{ p.get_images()[0] if p.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ p.name }}" loading="lazy"/>
+          <img src="{{ p.get_images()[0] if p.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ p.name }}" loading="lazy"/>
           <a href="/product/{{ p.slug }}" class="quick-add">Quick View</a>
         </div>
         <div class="card-body">

@@ -9,7 +9,7 @@
     {% for item in items %}
     <div class="card product-card">
       <div class="img-wrapper">
-        <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ item.product.name }}" loading="lazy"/>
+        <img src="{{ item.product.get_images()[0] if item.product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ item.product.name }}" loading="lazy"/>
         <form action="/wishlist/toggle/{{ item.product.id }}" method="POST" style="display:inline">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <button class="wishlist-btn active" style="color:#E53E3E"><i class="fas fa-heart"></i></button>

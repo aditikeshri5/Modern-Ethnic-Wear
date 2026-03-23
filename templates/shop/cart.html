@@ -19,7 +19,7 @@
     <div>
       {% for item in items %}
       <div class="cart-item">
-        <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/200/250' }}" alt="{{ item.product.name }}"/>
+        <img src="{{ item.product.get_images()[0] if item.product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ item.product.name }}"/>
         <div>
           <a href="/product/{{ item.product.slug }}" style="text-decoration:none;color:inherit;font-weight:600;font-family:var(--font-display);font-size:1.05rem">{{ item.product.name }}</a>
           <div style="font-size:0.8rem;color:var(--warm-grey);margin:0.25rem 0">

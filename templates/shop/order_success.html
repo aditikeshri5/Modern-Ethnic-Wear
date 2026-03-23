@@ -18,7 +18,7 @@
     </div>
     {% for item in order.items %}
     <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.75rem;text-align:left">
-      <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/80/100' }}" style="width:60px;height:75px;object-fit:cover;border-radius:8px"/>
+      <img src="{{ item.product.get_images()[0] if item.product.get_images() else url_for('media', filename='misc/editorial.png') }}" style="width:60px;height:75px;object-fit:cover;border-radius:8px"/>
       <div style="flex:1">
         <div style="font-size:0.875rem;font-weight:600">{{ item.product.name }}</div>
         <div style="font-size:0.75rem;color:var(--warm-grey)">Qty: {{ item.quantity }} {% if item.size %}· {{ item.size }}{% endif %}</div>

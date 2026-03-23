@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from extensions import db, bcrypt, login_manager, mail, csrf
 import os
 
@@ -7,7 +7,8 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'rangmanch-secret-key-2024')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///rangmanch.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/images/products')
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'media/products')
+    app.config['MEDIA_FOLDER'] = os.path.join(app.root_path, 'media')
     app.config['RAZORPAY_KEY_ID'] = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_key')
     app.config['RAZORPAY_KEY_SECRET'] = os.environ.get('RAZORPAY_KEY_SECRET', 'rzp_test_secret')
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -37,6 +38,10 @@ def create_app():
     app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(payment, url_prefix='/payment')
     app.register_blueprint(analytics, url_prefix='/analytics')
+
+    @app.route('/media/<path:filename>')
+    def media(filename):
+        return send_from_directory(app.config['MEDIA_FOLDER'], filename)
 
     with app.app_context():
         db.create_all()

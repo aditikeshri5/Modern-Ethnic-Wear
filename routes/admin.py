@@ -34,7 +34,7 @@ def save_image(file):
         upload_folder = current_app.config['UPLOAD_FOLDER']
         os.makedirs(upload_folder, exist_ok=True)
         file.save(os.path.join(upload_folder, fname))
-        return f'/static/images/products/{fname}'
+        return f'/media/products/{fname}'
     return None
 
 # ──────────────────────────────────────────

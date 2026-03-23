@@ -91,7 +91,7 @@
         {% for product in products %}
         <div class="card product-card">
           <div class="img-wrapper">
-            <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/530' }}" alt="{{ product.name }}" loading="lazy"/>
+            <img src="{{ product.get_images()[0] if product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ product.name }}" loading="lazy"/>
             {% if product.discount_percent() > 0 %}<div class="badge-discount">-{{ product.discount_percent() }}%</div>{% endif %}
             <form action="/wishlist/toggle/{{ product.id }}" method="POST" style="display:inline">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

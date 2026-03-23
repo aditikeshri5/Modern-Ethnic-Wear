@@ -126,7 +126,7 @@
     <div class="cat-grid fade-up">
       {% for category in categories[:5] %}
       <a href="/products?category={{ category.slug }}" class="cat-card">
-        <img src="{{ url_for('static', filename='images/collections/' ~ category.slug ~ '.png') }}" alt="{{ category.name }}"/>
+        <img src="{{ url_for('media', filename='collections/' ~ category.slug ~ '.png') }}" alt="{{ category.name }}"/>
         <div class="cat-overlay">
           <div>
             <div class="cat-name">{{ category.name }}</div>
@@ -150,7 +150,7 @@
       {% for product in featured %}
       <div class="card product-card fade-up" style="transition-delay: {{ loop.index0 * 0.1 }}s">
         <div class="img-wrapper">
-          <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/500' }}" alt="{{ product.name }}" loading="lazy"/>
+          <img src="{{ product.get_images()[0] if product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ product.name }}" loading="lazy"/>
           {% if product.discount_percent() > 0 %}
           <div class="badge-discount">-{{ product.discount_percent() }}%</div>
           {% endif %}
@@ -183,7 +183,7 @@
 <!-- EDITORIAL -->
 <section class="editorial section" style="padding: 0;">
   <div style="display: flex; flex-wrap: wrap;">
-    <img src="{{ url_for('static', filename='images/misc/editorial.png') }}" alt="Editorial" style="width:50%;min-height:400px;object-fit:cover;"/>
+    <img src="{{ url_for('media', filename='misc/editorial.png') }}" alt="Editorial" style="width:50%;min-height:400px;object-fit:cover;"/>
     <div style="width:50%;background:var(--burgundy);display:flex;align-items:center;padding:4rem;">
       <div>
         <p style="color:var(--gold-light);font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:1rem">✦ Story of Craft</p>
@@ -206,7 +206,7 @@
       {% for product in new_arrivals %}
       <div class="card product-card fade-up">
         <div class="img-wrapper">
-          <img src="{{ product.get_images()[0] if product.get_images() else 'https://picsum.photos/400/500' }}" alt="{{ product.name }}" loading="lazy"/>
+          <img src="{{ product.get_images()[0] if product.get_images() else url_for('media', filename='misc/editorial.png') }}" alt="{{ product.name }}" loading="lazy"/>
           <div class="badge-discount" style="background:var(--burgundy)">NEW</div>
           <a href="/product/{{ product.slug }}" class="quick-add">Quick View</a>
         </div>
@@ -232,7 +232,7 @@
     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-bottom: 2rem;">
       {% for i in range(6) %}
       <div style="aspect-ratio:1;overflow:hidden;border-radius:8px;">
-        <img src="{{ url_for('static', filename='images/misc/insta' ~ ((i % 4) + 1) ~ '.png') }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
+        <img src="{{ url_for('media', filename='misc/insta' ~ ((i % 4) + 1) ~ '.png') }}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
       </div>
       {% endfor %}
     </div>

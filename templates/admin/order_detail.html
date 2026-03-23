@@ -14,7 +14,7 @@
           <tr>
             <td>
               <div style="display:flex;align-items:center;gap:0.6rem">
-                <img src="{{ item.product.get_images()[0] if item.product.get_images() else 'https://picsum.photos/50/62' }}" style="width:45px;height:56px;object-fit:cover;border-radius:6px"/>
+                <img src="{{ item.product.get_images()[0] if item.product.get_images() else url_for('media', filename='misc/editorial.png') }}" style="width:45px;height:56px;object-fit:cover;border-radius:6px"/>
                 <div style="font-size:0.85rem;font-weight:600">{{ item.product.name }}</div>
               </div>
             </td>
