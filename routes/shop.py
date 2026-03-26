@@ -103,12 +103,16 @@ def toggle_wishlist(product_id):
     item = Wishlist.query.filter_by(user_id=current_user.id, product_id=product_id).first()
     if item:
         db.session.delete(item)
-        db.session.commit()
-        return jsonify({'status': 'removed'})
+        status = 'removed'
     else:
         db.session.add(Wishlist(user_id=current_user.id, product_id=product_id))
-        db.session.commit()
-        return jsonify({'status': 'added'})
+        status = 'added'
+    
+    db.session.commit()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': status})
+    return redirect(request.referrer or url_for('shop.index'))
 
 @shop.route('/wishlist')
 @login_required

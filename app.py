@@ -4,8 +4,8 @@ import os
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'rangmanch-secret-key-2024')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///rangmanch.db')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'swaraj-atelier-secret-key-2024')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///swaraj_atelier.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'media/products')
     app.config['MEDIA_FOLDER'] = os.path.join(app.root_path, 'media')

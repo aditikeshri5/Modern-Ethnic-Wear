@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Create Account — Rangmanch{% endblock %}
+{% block title %}Create Account — Swaraj Atelier{% endblock %}
 {% block head %}
 <style>
   .auth-wrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; }
@@ -11,8 +11,9 @@
 {% block content %}
 <div class="auth-wrap">
   <div class="auth-card">
-    <div class="auth-logo">Rang<span>manch</span></div>
-    <p style="text-align:center;color:var(--warm-grey);font-size:0.875rem;margin-bottom:2rem">Join the Rangmanch community ✨</p>
+    <div style="text-align:center;margin-bottom:0.5rem"><img src="/media/logo.png" alt="Swaraj Atelier Logo" style="height:50px;border-radius:50%"></div>
+    <div class="auth-logo">Swaraj<span> Atelier</span></div>
+    <p style="text-align:center;color:var(--warm-grey);font-size:0.875rem;margin-bottom:2rem">Join the Swaraj Atelier community ✨</p>
     <form method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">

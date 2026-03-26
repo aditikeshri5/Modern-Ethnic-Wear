@@ -22,7 +22,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        flash(f'Welcome to Rangmanch, {name}! 🎉', 'success')
+        flash(f'Welcome to Swaraj Atelier, {name}! 🎉', 'success')
         return redirect(url_for('shop.index'))
     return render_template('auth/register.html')
 

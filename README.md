@@ -1,4 +1,4 @@
-# 🎨 Rangmanch — Indo Ethnic Fashion Marketplace
+# 🎨 Swaraj Atelier — Indo Ethnic Fashion Marketplace
 
 A full-featured Flask e-commerce application for Indo ethnic wear targeting young audiences.
 
@@ -51,7 +51,7 @@ A full-featured Flask e-commerce application for Indo ethnic wear targeting youn
 
 ### 1. Clone & setup environment
 ```bash
-cd rangmanch
+cd swaraj-atelier
 python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -78,7 +78,7 @@ The app will auto-seed demo data on first run.
 ### 5. Demo Credentials
 | Role     | Email                    | Password  |
 |----------|--------------------------|-----------|
-| Admin    | admin@rangmanch.in       | admin123  |
+| Admin    | admin@swarajatelier.in       | admin123  |
 | Customer | priya@example.com        | test123   |
 
 ---
@@ -86,7 +86,7 @@ The app will auto-seed demo data on first run.
 ## 📁 Project Structure
 
 ```
-rangmanch/
+swaraj-atelier/
 ├── app.py                    # App factory & extensions
 ├── models/
 │   └── __init__.py           # All SQLAlchemy models

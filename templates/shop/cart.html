@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Your Cart — Rangmanch{% endblock %}
+{% block title %}Your Cart — Swaraj Atelier{% endblock %}
 {% block head %}
 <style>
   .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start; padding: 2rem 0 4rem; }
@@ -85,9 +85,12 @@
 {% endblock %}
 {% block scripts %}
 <script>
+  let baseTotal = {{ (subtotal + shipping)|int }};
   function applyCoupon() {
     const code = document.getElementById('couponInput').value;
-    const fd = new FormData(); fd.append('coupon_code', code);
+    const fd = new FormData(); 
+    fd.append('coupon_code', code);
+    fd.append('csrf_token', '{{ csrf_token() }}');
     fetch('/cart/apply-coupon', { method: 'POST', body: fd })
       .then(r => r.json()).then(data => {
         const msg = document.getElementById('couponMsg');
@@ -96,6 +99,10 @@
         if (data.success) {
           document.getElementById('discountRow').style.display = 'flex';
           document.getElementById('discountAmt').textContent = '−₹' + data.discount.toFixed(0);
+          document.getElementById('totalAmt').textContent = '₹' + (baseTotal - data.discount).toFixed(0);
+        } else {
+          document.getElementById('discountRow').style.display = 'none';
+          document.getElementById('totalAmt').textContent = '₹' + baseTotal;
         }
       });
   }

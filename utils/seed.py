@@ -12,8 +12,8 @@ def seed_data():
 
     # Admin user
     admin = User(
-        name='Rangmanch Admin',
-        email='admin@rangmanch.in',
+        name='Swaraj Atelier Admin',
+        email='admin@swarajatelier.in',
         password=bcrypt.generate_password_hash('admin123').decode('utf-8'),
         role='admin'
     )
