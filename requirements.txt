@@ -9,3 +9,4 @@ razorpay==1.4.1
 Pillow
 python-dotenv==1.0.0
 Flask-WTF==1.2.1
+gunicorn
